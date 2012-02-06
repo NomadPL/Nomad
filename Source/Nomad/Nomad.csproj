@@ -31,6 +31,7 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <ProjectGuid>{3828EBBD-FFBA-4C30-BF46-D3742BC165F1}</ProjectGuid>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -151,8 +152,11 @@
     <Compile Include="Regions\Behaviors\SynchronizeToolbarsBehavior.cs" />
     <Compile Include="Regions\Behaviors\ItemsControlTemplateSelector.cs" />
     <Compile Include="Regions\Behaviors\TabControlHeaderTemplateSelectorBehavior.cs" />
+    <Compile Include="Remote\Communication\ConfigurationResolver.cs" />
+    <None Include="app.config_bak" />
     <Compile Include="Remote\Communication\DistributedEventAggregator.cs" />
-    <Compile Include="Remote\Configuration.cs" />
+    <Compile Include="Remote\Communication\IDistributedEventAggregator.cs" />
+    <Compile Include="Remote\DistributedConfiguration.cs" />
     <Compile Include="Services\ILoadedModulesService.cs" />
     <Compile Include="Services\LoadedModulesService.cs" />
     <Compile Include="Signing\FileUtils\SignedFile.cs" />
@@ -236,13 +240,16 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <WCFMetadata Include="Service References\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <ProjectExtensions />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
+			 Other similar extension points exist, see Microsoft.Common.targets.
+	<Target Name="BeforeBuild">
+	</Target>
+	<Target Name="AfterBuild">
+	</Target>
+	-->
 </Project>
