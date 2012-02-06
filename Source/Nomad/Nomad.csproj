@@ -151,6 +151,8 @@
     <Compile Include="Regions\Behaviors\SynchronizeToolbarsBehavior.cs" />
     <Compile Include="Regions\Behaviors\ItemsControlTemplateSelector.cs" />
     <Compile Include="Regions\Behaviors\TabControlHeaderTemplateSelectorBehavior.cs" />
+    <Compile Include="Remote\Communication\DistributedEventAggregator.cs" />
+    <Compile Include="Remote\Configuration.cs" />
     <Compile Include="Services\ILoadedModulesService.cs" />
     <Compile Include="Services\LoadedModulesService.cs" />
     <Compile Include="Signing\FileUtils\SignedFile.cs" />
