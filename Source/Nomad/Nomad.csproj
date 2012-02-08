@@ -106,6 +106,7 @@
     <Compile Include="Communication\EventAggregation\TicketDisposedArgs.cs" />
     <Compile Include="Communication\EventAggregation\WpfGuiThreadProvider.cs" />
     <Compile Include="Distributed\Communication\Resolvers\IResolver.cs" />
+    <Compile Include="Distributed\Communication\Resolvers\ResolverBase.cs" />
     <Compile Include="Distributed\Communication\Resolvers\ResolverFactory.cs" />
     <Compile Include="Distributed\Communication\Resolvers\SimpleResolver.cs" />
     <Compile Include="Internationalization\FakeResourceSource.cs" />
