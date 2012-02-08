@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
-using Nomad.Remote.Communication;
+using Nomad.Distributed.Communication;
 
-namespace Nomad.Remote
+namespace Nomad.Distributed
 {
 	/// <summary>
 	///     Describes the configuration of the distributed part of the system. This configuration
@@ -15,6 +15,7 @@ namespace Nomad.Remote
 	/// providing whole WCF xml based configuration is to tiresome.
 	/// </para>
 	/// </summary>
+	[Serializable]
 	public class DistributedConfiguration
 	{
 		/// <summary>

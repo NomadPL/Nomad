@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
+using Nomad.Distributed;
+using Nomad.Distributed.Communication;
 using Nomad.Modules;
 using Nomad.Modules.Filters;
-using Nomad.Remote;
-using Nomad.Remote.Communication;
 using Nomad.Signing.SignatureAlgorithms;
 using Nomad.Signing.SignatureProviders;
 using Nomad.Updater;

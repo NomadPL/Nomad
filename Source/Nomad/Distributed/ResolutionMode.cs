@@ -1,7 +1,7 @@
 ﻿using Nomad.Communication.ServiceLocation;
-using Nomad.Remote.Communication;
+using Nomad.Distributed.Communication;
 
-namespace Nomad.Remote
+namespace Nomad.Distributed
 {
     /// <summary>
     ///     Desribes the type of how the distributed part can be configured
