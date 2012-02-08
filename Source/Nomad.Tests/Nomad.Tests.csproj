@@ -107,7 +107,11 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="FunctionalTests\Distributed\DistributedNomadEnvironment.cs" />
+    <Compile Include="FunctionalTests\Distributed\BasicDistributedNomad.cs" />
+    <Compile Include="FunctionalTests\Distributed\Data\SharedInterfaces.cs" />
+    <Compile Include="FunctionalTests\Distributed\Data\SimpleListeningModule.cs" />
+    <Compile Include="FunctionalTests\Distributed\Data\SimplePublishingModule.cs" />
+    <Compile Include="FunctionalTests\Distributed\TopicDistributedNomad.cs" />
     <Compile Include="FunctionalTests\EventAggregation\EventAggregationGuiThreadChangesSupport.cs" />
     <Compile Include="FunctionalTests\EventAggregation\EventAggregatorFacade.cs" />
     <Compile Include="FunctionalTests\EventAggregation\EventPublishing.cs" />

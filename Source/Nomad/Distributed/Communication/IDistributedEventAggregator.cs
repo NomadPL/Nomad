@@ -4,11 +4,22 @@ using Nomad.Messages.Distributed;
 
 namespace Nomad.Distributed.Communication
 {
-	// NOTE: You can use the "Rename" command on the "Refactor" menu to change the interface name "IDistributedEventAggregator" in both code and config file together.
 	[ServiceContract]
 	public interface IDistributedEventAggregator
 	{
+		/// <summary>
+		///		Invoked by other  <see cref="DistributedEventAggregator"/> instances 
+		/// to send <c>control</c> messages for internal <see cref="Nomad"/> use.
+		/// </summary>
+		/// <param name="message"></param>
 		[OperationContract]
-		void OnPublish(NomadMessage message);
+		void OnPublishControl(NomadMessage message);
+
+		/// <summary>
+		///		Invoked by other <see cref="DistributedEventAggregator"/> instances
+		/// to send <c>user defined messages</c>.
+		/// </summary>
+		[OperationContract]
+		void OnPublish(byte[] byteStream, TypeDescriptor typeDescriptor);
 	}
 }

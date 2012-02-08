@@ -113,6 +113,7 @@
     <Compile Include="Distributed\Communication\Resolvers\ResolverBase.cs" />
     <Compile Include="Distributed\Communication\Resolvers\ResolverFactory.cs" />
     <Compile Include="Distributed\Communication\Resolvers\SimpleResolver.cs" />
+    <Compile Include="Distributed\Communication\TypeDescriptor.cs" />
     <Compile Include="Internationalization\FakeResourceSource.cs" />
     <Compile Include="Internationalization\IResourceSource.cs" />
     <Compile Include="Internationalization\ResourceExtension.cs" />

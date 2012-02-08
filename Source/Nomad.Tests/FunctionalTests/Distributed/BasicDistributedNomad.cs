@@ -7,8 +7,12 @@ using TestsShared;
 
 namespace Nomad.Tests.FunctionalTests.Distributed
 {
+	/// <summary>
+	///		Tests <see cref="Nomad.Distributed"/> mechanisms at functional
+	/// level. Simple beacause no compilaton at runtime is done.
+	/// </summary>
 	[FunctionalTests]
-	internal class DistributedNomadEnvironment
+	internal class BasicDistributedNomad
 	{
 		private NomadKernel _kernel1;
 		private NomadKernel _kernel2;
