@@ -24,7 +24,7 @@ namespace Nomad.Modules
 	///     As default implementation of <see cref="IWindsorContainer"/> is used default WindsorContainer.
 	/// </para>
 	/// </remarks>
-	public class ContainerCreator : MarshalByRefObject
+	public class ContainerCreator : MarshalByRefObject, IDisposable
 	{
 		private readonly IWindsorContainer _windsorContainer;
 		private ServiceHost _distributedEventAggregatorServiceHost;
@@ -82,6 +82,7 @@ namespace Nomad.Modules
 
 		private void RegisterServiceHostDEA(DistributedConfiguration distributedConfiguration)
 		{
+			// TODO: refactor this code to be working with IInstanceProvider classes and whole WCF stack
 			_distributedEventAggregatorServiceHost = new ServiceHost(typeof(DistributedEventAggregator));
 			_distributedEventAggregatorServiceHost.AddServiceEndpoint
 				(
@@ -121,6 +122,14 @@ namespace Nomad.Modules
 
 				// run service
 				RegisterServiceHostDEA(distributedConfiguration);
+			}
+		}
+
+		public void Dispose()
+		{
+			if (_distributedEventAggregatorServiceHost != null)
+			{
+				_distributedEventAggregatorServiceHost.Close();
 			}
 		}
 	}

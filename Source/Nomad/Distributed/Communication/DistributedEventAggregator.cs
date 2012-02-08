@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ServiceModel;
+using log4net;
 using Nomad.Communication.EventAggregation;
 using Nomad.Messages;
 using Nomad.Messages.Distributed;
@@ -17,6 +18,8 @@ namespace Nomad.Distributed.Communication
 	public class DistributedEventAggregator : MarshalByRefObject,
 	                                          IEventAggregator, IDistributedEventAggregator, IDisposable
 	{
+		private static readonly ILog loggger = LogManager.GetLogger(typeof (DistributedEventAggregator));
+
 		private static IEventAggregator _localEventAggregator;
 		private IList<IDistributedEventAggregator> _deas;
 
@@ -103,6 +106,7 @@ namespace Nomad.Distributed.Communication
 
 		#endregion
 
+		// TODO: this method should be injectable
 		private void SendToAll<T>(T message)
 		{
 			// NOTE: this code should be parralelized
@@ -114,9 +118,8 @@ namespace Nomad.Distributed.Communication
 				}
 				catch (Exception e)
 				{
-					// NOTE: eating exception here, needs the logger 
+					loggger.Warn("Exception during sending to DEA",e);
 					throw e;
-					Console.WriteLine(e.StackTrace);
 				}
 			}
 		}

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Policy;
-using System.ServiceModel;
 using Nomad.Communication.EventAggregation;
 using Nomad.Communication.ServiceLocation;
 using Nomad.Exceptions;
@@ -18,10 +17,9 @@ namespace Nomad.Core
 	/// </summary>
 	public class NomadKernel : IModulesOperations, IDisposable
 	{
-		private ServiceHost _distributedEventAggregatorServiceHost;
-
 		private ModuleManager _moduleManager;
-		
+		private ContainerCreator _moduleLoaderCreator;
+
 		/// <summary>
 		/// Initializes new instance of the <see cref="NomadKernel"/> class.
 		/// </summary>
@@ -42,7 +40,7 @@ namespace Nomad.Core
 			if (nomadConfiguration == null)
 			{
 				throw new ArgumentNullException("nomadConfiguration",
-												"Configuration must be provided.");
+				                                "Configuration must be provided.");
 			}
 			nomadConfiguration.Freeze();
 			KernelConfiguration = nomadConfiguration;
@@ -119,7 +117,10 @@ namespace Nomad.Core
 
 		public void Dispose()
 		{
-			if (_distributedEventAggregatorServiceHost != null) _distributedEventAggregatorServiceHost.Close();
+			if (_moduleLoaderCreator != null)
+			{
+				_moduleLoaderCreator.Dispose();
+			}
 		}
 
 		#endregion
@@ -134,8 +135,10 @@ namespace Nomad.Core
 		/// </remarks>
 		public void UnloadModules()
 		{
-			// TODO: add support for performing unLoad method on every module 
 			_moduleManager.InvokeUnloadCallback();
+
+			// dispose all the elements on the other site 
+			_moduleLoaderCreator.Dispose();
 
 			AppDomain.Unload(ModuleAppDomain);
 			ModuleAppDomain = null;
@@ -174,7 +177,7 @@ namespace Nomad.Core
 			{
 				// publish event about not loading module to other modules.
 				EventAggregator.Publish(new NomadCouldNotLoadModuleMessage(
-											"Could not load modules", e.ModuleName));
+				                        	"Could not load modules", e.ModuleName));
 
 				// rethrow this exception to kernel domain 
 				throw;
@@ -193,10 +196,10 @@ namespace Nomad.Core
 		private void RegisterCoreServices(NomadConfiguration nomadConfiguration)
 		{
 			ModuleAppDomain = AppDomain.CreateDomain("Modules AppDomain",
-													 new Evidence(AppDomain.CurrentDomain.Evidence),
-													 AppDomain.CurrentDomain.BaseDirectory,
-													 AppDomain.CurrentDomain.BaseDirectory,
-													 true);
+			                                         new Evidence(AppDomain.CurrentDomain.Evidence),
+			                                         AppDomain.CurrentDomain.BaseDirectory,
+			                                         AppDomain.CurrentDomain.BaseDirectory,
+			                                         true);
 
 			// create kernel version of the event aggregator4
 			var siteEventAggregator = new EventAggregator(new NullGuiThreadProvider());
@@ -207,25 +210,25 @@ namespace Nomad.Core
 
 			if (typeName != null)
 			{
-				var moduleLoaderCreator = (ContainerCreator)
-										  ModuleAppDomain.CreateInstanceAndUnwrap(asmName, typeName);
+				_moduleLoaderCreator = (ContainerCreator)
+				                       ModuleAppDomain.CreateInstanceAndUnwrap(asmName, typeName);
 
 				var distributedConfiguration = nomadConfiguration.DistributedConfiguration;
-				moduleLoaderCreator.Install(distributedConfiguration);
+				_moduleLoaderCreator.Install(distributedConfiguration);
 
 				// create facade for event aggregator combining proxy and on site object
-				EventAggregator = new ForwardingEventAggregator(moduleLoaderCreator.EventAggregatorOnModulesDomain,
-																siteEventAggregator);
+				EventAggregator = new ForwardingEventAggregator(_moduleLoaderCreator.EventAggregatorOnModulesDomain,
+				                                                siteEventAggregator);
 
 				// used proxied service locator
-				ServiceLocator = moduleLoaderCreator.ServiceLocator;
+				ServiceLocator = _moduleLoaderCreator.ServiceLocator;
 
-				ModuleLoader = moduleLoaderCreator.CreateModuleLoaderInstance();
+				ModuleLoader = _moduleLoaderCreator.CreateModuleLoaderInstance();
 			}
 
 			_moduleManager = new ModuleManager(ModuleLoader,
-											   KernelConfiguration.ModuleFilter,
-											   KernelConfiguration.DependencyChecker);
+			                                   KernelConfiguration.ModuleFilter,
+			                                   KernelConfiguration.DependencyChecker);
 		}
 
 
@@ -234,12 +237,12 @@ namespace Nomad.Core
 			// registering updater using data from configuration
 			// TODO: maybe changing the event aggregator not to be passed via constructor
 			var updater = new NomadUpdater(KernelConfiguration.ModuleDirectoryPath,
-										   KernelConfiguration.ModuleRepository,
-										   this,
-										   EventAggregator,
-										   KernelConfiguration.ModulePackager,
-										   KernelConfiguration.DependencyChecker,
-										   KernelConfiguration.ModuleFinder) {Mode = KernelConfiguration.UpdaterType};
+			                               KernelConfiguration.ModuleRepository,
+			                               this,
+			                               EventAggregator,
+			                               KernelConfiguration.ModulePackager,
+			                               KernelConfiguration.DependencyChecker,
+			                               KernelConfiguration.ModuleFinder) {Mode = KernelConfiguration.UpdaterType};
 
 			// FIXME this into construcot of the updater ?
 			ServiceLocator.Register<IUpdater>(updater);
