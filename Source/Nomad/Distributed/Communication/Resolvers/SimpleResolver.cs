@@ -7,22 +7,21 @@ namespace Nomad.Distributed.Communication.Resolvers
 	///		Resolves the <see cref="IDistributedEventAggregator"/> instances using
 	/// the <see cref="DistributedConfiguration.URLs"/>.
 	/// </summary>
-	public class SimpleResolver : IResolver
+	public class SimpleResolver : ResolverBase, IResolver
 	{
-		private readonly DistributedConfiguration _configuration;
-
-		public SimpleResolver(DistributedConfiguration configuration)
+		public SimpleResolver(DistributedConfiguration distributedConfiguration)
 		{
-			_configuration = configuration;
+			DistributedConfiguration = distributedConfiguration;
 		}
 
 		public IList<IDistributedEventAggregator> Resolve()
 		{
-			IList<IDistributedEventAggregator> deas = new List<IDistributedEventAggregator>(_configuration.URLs.Count);
+			IList<IDistributedEventAggregator> deas = new List<IDistributedEventAggregator>(DistributedConfiguration.URLs.Count);
 
-			foreach (var url in _configuration.URLs)
+			foreach (var url in DistributedConfiguration.URLs)
 			{
-				// TODO: write creating proxy or something like this
+				IDistributedEventAggregator dea = CreateDEA(url);
+				deas.Add(dea);
 			}
 
 			return deas;
