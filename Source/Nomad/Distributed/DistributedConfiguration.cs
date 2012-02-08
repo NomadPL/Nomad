@@ -35,7 +35,8 @@ namespace Nomad.Distributed
 				return new DistributedConfiguration()
 						   {
 							   LocalURI = new Uri("net.tcp://127.0.0.1:5555/IDEA"),
-							   LocalBinding = new NetTcpBinding()
+							   URLs = new List<string>(),
+							   Mode = ResolutionMode.Manual
 						   };
 			}
 		}
@@ -52,10 +53,5 @@ namespace Nomad.Distributed
 		/// be served.
 		/// </summary>
 		public Uri LocalURI { get; set; }
-
-		/// <summary>
-		///     Binding used in the mode
-		/// </summary>
-		public Binding LocalBinding { get; set; }
 	}
 }

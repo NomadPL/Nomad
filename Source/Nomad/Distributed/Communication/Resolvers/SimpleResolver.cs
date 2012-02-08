@@ -16,7 +16,7 @@ namespace Nomad.Distributed.Communication.Resolvers
 
 		public IList<IDistributedEventAggregator> Resolve()
 		{
-			IList<IDistributedEventAggregator> deas = new List<IDistributedEventAggregator>(DistributedConfiguration.URLs.Count);
+			IList<IDistributedEventAggregator> deas = new List<IDistributedEventAggregator>();
 
 			foreach (var url in DistributedConfiguration.URLs)
 			{

@@ -32,17 +32,19 @@ namespace Nomad.Distributed
 			_distributedEventAggregatorServiceHost.AddServiceEndpoint
 				(
 					typeof(IDistributedEventAggregator),
-					_distributedConfiguration.LocalBinding,
+					new NetTcpBinding(), 
 					_distributedConfiguration.LocalURI
 				);
+			_distributedEventAggregatorServiceHost.Open();
+			_distributedEventAggregatorServiceHost.
+
 
 			var resolver = new ResolverFactory(_distributedConfiguration);
-
 			_localDEA = (DistributedEventAggregator)_distributedEventAggregatorServiceHost.SingletonInstance;
 			_localDEA.RemoteDistributedEventAggregator = resolver.Resolve();
 			_localDEA.LocalEventAggregator = containern.Resolve<IEventAggregator>(PURE_EA);
 
-			_distributedEventAggregatorServiceHost.Open();
+			
 
 			return _localDEA;
 		}

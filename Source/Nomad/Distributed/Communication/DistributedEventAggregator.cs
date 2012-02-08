@@ -14,6 +14,7 @@ namespace Nomad.Distributed.Communication
 	/// <remarks>
 	///     This class is visible to the modules loaded to Nomad as simple <see cref="IEventAggregator"/>. 
 	/// </remarks>
+	[ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
 	public class DistributedEventAggregator : MarshalByRefObject,
 											  IEventAggregator, IDistributedEventAggregator, IDisposable
 	{

@@ -107,6 +107,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FunctionalTests\Distributed\DistributedNomadEnvironment.cs" />
     <Compile Include="FunctionalTests\EventAggregation\EventAggregationGuiThreadChangesSupport.cs" />
     <Compile Include="FunctionalTests\EventAggregation\EventAggregatorFacade.cs" />
     <Compile Include="FunctionalTests\EventAggregation\EventPublishing.cs" />

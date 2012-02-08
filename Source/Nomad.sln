@@ -180,9 +180,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ThreadedToolbarControlledMo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfUpdaterModule", "Nomad.Tutorials\WpfUpdaterModule\WpfUpdaterModule.csproj", "{F3639C74-5686-4304-B32B-44CE81364C4D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tutorial_05_Distributed_Modules", "Tutorial_05_Distributed_Modules", "{520F54FB-10CC-4C57-BCD0-54629902C343}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tutorial_05_Distributed_Event_Aggregator", "Tutorial_05_Distributed_Event_Aggregator", "{520F54FB-10CC-4C57-BCD0-54629902C343}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Distributed.Host.Example", "Nomad.Tutorials\Distributed.Host.Example\Distributed.Host.Example.csproj", "{AEBDBA4D-8425-4E4A-A3C6-C5443FDA3CD7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Distributed_Modules_Server", "Nomad.Tutorials\Distributed_Modules_Server\Distributed_Modules_Server.csproj", "{50E22ABC-D074-48B2-BDE8-1B4570D60B01}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client_Application", "Nomad.Tutorials\Client_Application\Client_Application.csproj", "{E52BF5BE-F770-4F91-B09A-000841200E50}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -480,16 +482,26 @@ Global
 		{F3639C74-5686-4304-B32B-44CE81364C4D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{F3639C74-5686-4304-B32B-44CE81364C4D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{F3639C74-5686-4304-B32B-44CE81364C4D}.Release|x86.ActiveCfg = Release|Any CPU
-		{AEBDBA4D-8425-4E4A-A3C6-C5443FDA3CD7}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{AEBDBA4D-8425-4E4A-A3C6-C5443FDA3CD7}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
-		{AEBDBA4D-8425-4E4A-A3C6-C5443FDA3CD7}.Debug|Mixed Platforms.Build.0 = Debug|x86
-		{AEBDBA4D-8425-4E4A-A3C6-C5443FDA3CD7}.Debug|x86.ActiveCfg = Debug|x86
-		{AEBDBA4D-8425-4E4A-A3C6-C5443FDA3CD7}.Debug|x86.Build.0 = Debug|x86
-		{AEBDBA4D-8425-4E4A-A3C6-C5443FDA3CD7}.Release|Any CPU.ActiveCfg = Release|x86
-		{AEBDBA4D-8425-4E4A-A3C6-C5443FDA3CD7}.Release|Mixed Platforms.ActiveCfg = Release|x86
-		{AEBDBA4D-8425-4E4A-A3C6-C5443FDA3CD7}.Release|Mixed Platforms.Build.0 = Release|x86
-		{AEBDBA4D-8425-4E4A-A3C6-C5443FDA3CD7}.Release|x86.ActiveCfg = Release|x86
-		{AEBDBA4D-8425-4E4A-A3C6-C5443FDA3CD7}.Release|x86.Build.0 = Release|x86
+		{50E22ABC-D074-48B2-BDE8-1B4570D60B01}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{50E22ABC-D074-48B2-BDE8-1B4570D60B01}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{50E22ABC-D074-48B2-BDE8-1B4570D60B01}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{50E22ABC-D074-48B2-BDE8-1B4570D60B01}.Debug|x86.ActiveCfg = Debug|x86
+		{50E22ABC-D074-48B2-BDE8-1B4570D60B01}.Debug|x86.Build.0 = Debug|x86
+		{50E22ABC-D074-48B2-BDE8-1B4570D60B01}.Release|Any CPU.ActiveCfg = Release|x86
+		{50E22ABC-D074-48B2-BDE8-1B4570D60B01}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{50E22ABC-D074-48B2-BDE8-1B4570D60B01}.Release|Mixed Platforms.Build.0 = Release|x86
+		{50E22ABC-D074-48B2-BDE8-1B4570D60B01}.Release|x86.ActiveCfg = Release|x86
+		{50E22ABC-D074-48B2-BDE8-1B4570D60B01}.Release|x86.Build.0 = Release|x86
+		{E52BF5BE-F770-4F91-B09A-000841200E50}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{E52BF5BE-F770-4F91-B09A-000841200E50}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{E52BF5BE-F770-4F91-B09A-000841200E50}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{E52BF5BE-F770-4F91-B09A-000841200E50}.Debug|x86.ActiveCfg = Debug|x86
+		{E52BF5BE-F770-4F91-B09A-000841200E50}.Debug|x86.Build.0 = Debug|x86
+		{E52BF5BE-F770-4F91-B09A-000841200E50}.Release|Any CPU.ActiveCfg = Release|x86
+		{E52BF5BE-F770-4F91-B09A-000841200E50}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{E52BF5BE-F770-4F91-B09A-000841200E50}.Release|Mixed Platforms.Build.0 = Release|x86
+		{E52BF5BE-F770-4F91-B09A-000841200E50}.Release|x86.ActiveCfg = Release|x86
+		{E52BF5BE-F770-4F91-B09A-000841200E50}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -536,6 +548,7 @@ Global
 		{97201BBC-900F-4416-8CEC-34C94F57E76B} = {86848038-102B-421B-A3FC-FC1816AF4C6E}
 		{AB2AF8C8-4641-4291-81F6-5EE4BBAFB59E} = {86848038-102B-421B-A3FC-FC1816AF4C6E}
 		{F6C9FD33-9A6C-4C5F-A6F0-BB9D4563D09F} = {86848038-102B-421B-A3FC-FC1816AF4C6E}
-		{AEBDBA4D-8425-4E4A-A3C6-C5443FDA3CD7} = {520F54FB-10CC-4C57-BCD0-54629902C343}
+		{50E22ABC-D074-48B2-BDE8-1B4570D60B01} = {520F54FB-10CC-4C57-BCD0-54629902C343}
+		{E52BF5BE-F770-4F91-B09A-000841200E50} = {520F54FB-10CC-4C57-BCD0-54629902C343}
 	EndGlobalSection
 EndGlobal
