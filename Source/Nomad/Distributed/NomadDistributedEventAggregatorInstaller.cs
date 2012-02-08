@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ServiceModel;
 using Castle.MicroKernel.Registration;
 using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
@@ -14,40 +13,9 @@ namespace Nomad.Distributed
 	/// </summary>
 	public class NomadDistributedEventAggregatorInstaller : IWindsorInstaller
 	{
-		public const String ON_SITE_NAME ="OnSiteEVG";
+		public const String ON_SITE_NAME = "OnSiteEVG";
 		public const String PURE_EA = "PureEVG";
 
-		private readonly DistributedConfiguration _distributedConfiguration;
-		private ServiceHost _distributedEventAggregatorServiceHost;
-		private DistributedEventAggregator _localDEA;
-
-		public NomadDistributedEventAggregatorInstaller(DistributedConfiguration distributedConfiguration)
-		{
-			_distributedConfiguration = distributedConfiguration;
-		}
-
-		private DistributedEventAggregator RegisterServiceHostDEA(IWindsorContainer containern)
-		{
-			_distributedEventAggregatorServiceHost = new ServiceHost(typeof(DistributedEventAggregator));
-			_distributedEventAggregatorServiceHost.AddServiceEndpoint
-				(
-					typeof(IDistributedEventAggregator),
-					new NetTcpBinding(), 
-					_distributedConfiguration.LocalURI
-				);
-			_distributedEventAggregatorServiceHost.Open();
-			_distributedEventAggregatorServiceHost.
-
-
-			var resolver = new ResolverFactory(_distributedConfiguration);
-			_localDEA = (DistributedEventAggregator)_distributedEventAggregatorServiceHost.SingletonInstance;
-			_localDEA.RemoteDistributedEventAggregator = resolver.Resolve();
-			_localDEA.LocalEventAggregator = containern.Resolve<IEventAggregator>(PURE_EA);
-
-			
-
-			return _localDEA;
-		}
 
 		public void Install(IWindsorContainer container, IConfigurationStore store)
 		{
@@ -56,10 +24,10 @@ namespace Nomad.Distributed
 				Component.For<IEventAggregator>().ImplementedBy<EventAggregator>().Named(PURE_EA).LifeStyle.Singleton,
 				Component
 					.For<IEventAggregator>()
-					.Instance(RegisterServiceHostDEA(container))
+					.UsingFactoryMethod(x => new DistributedEventAggregator(container.Resolve<IEventAggregator>()))
 					.Named(ON_SITE_NAME)
 					.LifeStyle.Singleton
-					);
+				);
 		}
 	}
 }

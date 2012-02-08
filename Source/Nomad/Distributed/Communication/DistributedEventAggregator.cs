@@ -14,12 +14,28 @@ namespace Nomad.Distributed.Communication
 	/// <remarks>
 	///     This class is visible to the modules loaded to Nomad as simple <see cref="IEventAggregator"/>. 
 	/// </remarks>
-	[ServiceBehavior(InstanceContextMode = InstanceContextMode.Single)]
 	public class DistributedEventAggregator : MarshalByRefObject,
-											  IEventAggregator, IDistributedEventAggregator, IDisposable
+	                                          IEventAggregator, IDistributedEventAggregator, IDisposable
 	{
-		private IEventAggregator _localEventAggregator;
+		private static IEventAggregator _localEventAggregator;
 		private IList<IDistributedEventAggregator> _deas;
+
+		private static readonly object LockObject = new object();
+
+		private static IEventAggregator LocalEventAggregator
+		{
+			get { return _localEventAggregator; }
+			set
+			{
+				lock (LockObject)
+				{
+					if (_localEventAggregator != null)
+						throw new InvalidOperationException("The local event aggregator can be set only once");
+
+					_localEventAggregator = value;
+				}
+			}
+		}
 
 		/// <summary>
 		///     This constructor is needed by the <see cref="ServiceHost"/>.
@@ -28,12 +44,21 @@ namespace Nomad.Distributed.Communication
 		{
 		}
 
+		/// <summary>
+		///		This constructor is used by container during initalization. Used by <see cref="NomadDistributedEventAggregatorInstaller"/>
+		/// </summary>
+		/// <param name="localEventAggrgator"></param>
+		public DistributedEventAggregator(IEventAggregator localEventAggrgator)
+		{
+			LocalEventAggregator = localEventAggrgator;
+		}
+
 		#region IDistributedEventAggregator Members
 
 		public void OnPublish(NomadMessage message)
 		{
 			// propagate message to the local subscribers
-			_localEventAggregator.Publish(message);
+			LocalEventAggregator.Publish(message);
 
 			// TODO: maybe log message being saved or something
 		}
@@ -47,24 +72,6 @@ namespace Nomad.Distributed.Communication
 		{
 			set { _deas = value; }
 			get { return _deas; }
-		}
-
-		/// <summary>
-		///     Gets or sets the Local Event Aggregator.
-		/// </summary>
-		/// <remarks>
-		///     The local event aggregator can be set <c>only once</c>.
-		/// </remarks>
-		public IEventAggregator LocalEventAggregator
-		{
-			get { return _localEventAggregator; }
-			set
-			{
-				if(_localEventAggregator !=null)
-					throw new InvalidOperationException("The local event aggregator can be registered only once");
-
-				_localEventAggregator = value;
-			}
 		}
 
 		#region IEventAggregator Members

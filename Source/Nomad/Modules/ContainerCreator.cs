@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Runtime.Remoting;
+using System.ServiceModel;
 using Castle.Windsor;
 using Nomad.Communication.EventAggregation;
 using Nomad.Communication.ServiceLocation;
 using Nomad.Core;
 using Nomad.Distributed;
+using Nomad.Distributed.Communication;
+using Nomad.Distributed.Communication.Resolvers;
 using Nomad.Modules.Installers;
 
 namespace Nomad.Modules
@@ -24,6 +27,7 @@ namespace Nomad.Modules
 	public class ContainerCreator : MarshalByRefObject
 	{
 		private readonly IWindsorContainer _windsorContainer;
+		private ServiceHost _distributedEventAggregatorServiceHost;
 
 
 		/// <summary>
@@ -76,6 +80,20 @@ namespace Nomad.Modules
 			return _windsorContainer.Resolve<IModuleLoader>();
 		}
 
+		private void RegisterServiceHostDEA(DistributedConfiguration distributedConfiguration)
+		{
+			_distributedEventAggregatorServiceHost = new ServiceHost(typeof(DistributedEventAggregator));
+			_distributedEventAggregatorServiceHost.AddServiceEndpoint
+				(
+					typeof(IDistributedEventAggregator),
+					new NetTcpBinding(),
+					
+					distributedConfiguration.LocalURI
+				);
+			_distributedEventAggregatorServiceHost.Open();
+
+		}
+
 		public void Install(DistributedConfiguration distributedConfiguration)
 		{
 			if (distributedConfiguration == null)
@@ -91,10 +109,18 @@ namespace Nomad.Modules
 			{
 				// use nomad specific installer for that
 				_windsorContainer.Install(
-					new NomadDistributedEventAggregatorInstaller(distributedConfiguration),
+					new NomadDistributedEventAggregatorInstaller(),
 					new NomadServiceLocatorInstaller(),
 					new ModuleLoaderInstaller()
 					);
+
+				// TODO: make registering resolver with container later
+				var dea = (DistributedEventAggregator) _windsorContainer.Resolve<IEventAggregator>(NomadDistributedEventAggregatorInstaller.ON_SITE_NAME);
+				var resolver = new ResolverFactory(distributedConfiguration);
+				dea.RemoteDistributedEventAggregator = resolver.Resolve();
+
+				// run service
+				RegisterServiceHostDEA(distributedConfiguration);
 			}
 		}
 	}
