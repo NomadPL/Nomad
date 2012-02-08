@@ -56,8 +56,9 @@ namespace Nomad.Core
 			// registering additional services ie. updater + listing + languages... etc
 			RegisterAdditionalServices();
 
-			if (nomadConfiguration.DistributedConfiguration == null) return;
-			InitializeDistributedEventAggregator();
+			// register the additional service of distributed event aggregator
+            // TODO: to be refactored out in the the KernelServices 
+			RegisterDistributedEventAggregator(nomadConfiguration);
 		}
 
 
@@ -194,15 +195,20 @@ namespace Nomad.Core
 
 		#endregion
 
-		private void InitializeDistributedEventAggregator()
+		private void RegisterDistributedEventAggregator(NomadConfiguration nomadConfiguration)
 		{
+            if (nomadConfiguration.DistributedConfiguration == null) return;
+
+		    var configuration = nomadConfiguration.DistributedConfiguration;
+
 			_distributedEventAggregatorServiceHost = new ServiceHost(typeof (DistributedEventAggregator));
-			_distributedEventAggregatorServiceHost.AddServiceEndpoint
-				(
-					typeof (IDistributedEventAggregator),
-					new NetTcpBinding(),
-					"net.tcp://127.0.0.1:5555/IDEA"
+		    _distributedEventAggregatorServiceHost.AddServiceEndpoint
+		        (
+		            typeof (IDistributedEventAggregator),
+		            configuration.LocalBinding,
+		            configuration.LocalURI
 				);
+
 			_distributedEventAggregatorServiceHost.Open();
 		}
 

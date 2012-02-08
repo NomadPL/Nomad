@@ -157,6 +157,7 @@
     <Compile Include="Remote\Communication\DistributedEventAggregator.cs" />
     <Compile Include="Remote\Communication\IDistributedEventAggregator.cs" />
     <Compile Include="Remote\DistributedConfiguration.cs" />
+    <Compile Include="Remote\ResolutionMode.cs" />
     <Compile Include="Services\ILoadedModulesService.cs" />
     <Compile Include="Services\LoadedModulesService.cs" />
     <Compile Include="Signing\FileUtils\SignedFile.cs" />
