@@ -22,8 +22,8 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		[Test]
 		public void two_Nomad_service_hosts_work_simultanously_on_different_ports()
 		{
-			string site1 = "net.tcp://127.0.0.1:5555/IDEA";
-			string site2 = "net.tcp://127.0.0.1:6666/IDEA";
+			string site1 = "net.tcp://127.0.0.1:6666/IDEA";
+			string site2 = "net.tcp://127.0.0.1:7777/IDEA";
 			var config = Nomad.Core.NomadConfiguration.Default;
 			config.DistributedConfiguration = Nomad.Distributed.DistributedConfiguration.Default;
 			config.DistributedConfiguration.LocalURI = new Uri(site1);
