@@ -116,6 +116,7 @@
     <Compile Include="Internationalization\ResourceProvider.cs" />
     <Compile Include="Internationalization\TranslationSource.cs" />
     <Compile Include="Messages\Distributed\NomadDetachingMessage.cs" />
+    <Compile Include="Messages\Distributed\NomadSimpleMessage.cs" />
     <Compile Include="Messages\Loading\NomadAllModulesLoadedMessage.cs" />
     <Compile Include="Messages\Loading\NomadCouldNotLoadModuleMessage.cs" />
     <Compile Include="Messages\NomadCultureChangedMessage.cs" />

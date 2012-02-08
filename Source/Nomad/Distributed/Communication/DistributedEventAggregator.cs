@@ -61,6 +61,8 @@ namespace Nomad.Distributed.Communication
 			LocalEventAggregator.Publish(message);
 
 			// TODO: maybe log message being saved or something
+			
+			Console.WriteLine("Received message:"+message.Message);
 		}
 
 		#endregion
@@ -94,30 +96,26 @@ namespace Nomad.Distributed.Communication
 			// try publishing message int the local system on this machine
 			_localEventAggregator.Publish(message);
 
-			var m = message as NomadMessage;
-			if (m == null)
-			{
-				throw new InvalidCastException();
-			}
-
+		
 			// publish remote
-			SendToAll(m);
+			SendToAll(message);
 		}
 
 		#endregion
 
-		private void SendToAll(NomadMessage message)
+		private void SendToAll<T>(T message)
 		{
 			// NOTE: this code should be parralelized
 			foreach (IDistributedEventAggregator dea in _deas)
 			{
 				try
 				{
-					dea.OnPublish(message);
+					dea.OnPublish(message as NomadMessage);
 				}
 				catch (Exception e)
 				{
 					// NOTE: eating exception here, needs the logger 
+					throw e;
 					Console.WriteLine(e.StackTrace);
 				}
 			}
@@ -126,8 +124,8 @@ namespace Nomad.Distributed.Communication
 		public void Dispose()
 		{
 			// onDispose method or sending Dispos message throu communication normal services
-			var msg = new NomadDetachingMessage("Sample Dispatching Message");
-			SendToAll(msg);
+			//var msg = new NomadDetachingMessage("Sample Dispatching Message");
+		//	SendToAll(msg);
 		}
 	}
 }

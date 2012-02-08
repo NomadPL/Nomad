@@ -1,5 +1,6 @@
 ﻿using System.ServiceModel;
 using Nomad.Messages;
+using Nomad.Messages.Distributed;
 
 namespace Nomad.Distributed.Communication
 {
