@@ -3,9 +3,11 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Nomad.KeysGenerator;
 using Nomad.Modules.Manifest;
 using Nomad.Signing;
 using Nomad.Utils.ManifestCreator;
+using Nomad.Utils.ManifestCreator.DependenciesProvider;
 
 namespace Nomad.Tests.FunctionalTests.Fixtures
 {
@@ -149,5 +151,52 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
         {
             return GenerateManifestForModule(modulePath, keyLocation, ManifestBuilderConfiguration.Default);
         }
+
+
+		public void SetUpModuleWithManifest(string outputDirectory, string srcPath,
+											   params string[] references)
+		{
+			// NOTE: we are using whole directory module discovery instead of file one
+			var configuration = ManifestBuilderConfiguration.Default;
+			configuration.ModulesDependenciesProvider = new WholeDirectoryModulesDependenciesProvider();
+
+			SetUpModuleWithManifest(outputDirectory, srcPath, configuration, references);
+		}
+
+		public void SetUpModuleWithManifest(string outputDirectory, string srcPath, ManifestBuilderConfiguration configuration,
+											   params string[] references)
+		{
+			OutputDirectory = outputDirectory;
+
+			string modulePath = GenerateModuleFromCode(srcPath, references);
+
+			// copy the references into folder with 
+			foreach (string reference in references)
+			{
+				File.Copy(reference, Path.Combine(outputDirectory, Path.GetFileName(reference)));
+			}
+
+			string KeyFile = @"alaMaKota.xml";
+			if (File.Exists(KeyFile))
+			{
+				File.Delete(KeyFile);
+			}
+			KeysGeneratorProgram.Main(new[] { KeyFile });
+
+			// manifest generating is for folder
+			GenerateManifestForModule(modulePath, KeyFile, configuration);
+
+			if (File.Exists(KeyFile))
+			{
+				File.Delete(KeyFile);
+			}
+			KeysGeneratorProgram.Main(new[] { KeyFile });
+
+			// remove those references
+			foreach (string reference in references)
+			{
+				File.Delete(Path.Combine(outputDirectory, Path.GetFileName(reference)));
+			}
+		}
     }
 }

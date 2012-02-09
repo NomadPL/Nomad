@@ -10,9 +10,11 @@ namespace Nomad.Tests.FunctionalTests.Distributed.Data
 	public class SimpleListeningModule : IModuleBootstraper
 	{
 		private readonly IEventAggregator _eventAggregator;
+		private int _counter;
 
 		public SimpleListeningModule(IEventAggregator eventAggregator)
 		{
+			_counter = 0;
 			_eventAggregator = eventAggregator;
 		}
 
@@ -24,6 +26,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed.Data
 		private void CallBack(DistributableMessage obj)
 		{
 			Console.WriteLine("Recieved: {0}", obj.Payload);
+			++_counter;
 		}
 
 		public void OnUnLoad()

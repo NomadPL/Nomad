@@ -37,13 +37,13 @@ namespace Nomad.Tests.FunctionalTests.Services
         [Test]
         public void loaded_modules_appear_on_list_in_kernel_and_modules_domain()
         {
-            SetUpModuleWithManifest(dir,
+            ModuleCompiler.SetUpModuleWithManifest(dir,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\Services\SimplestModulePossible1.cs");
 
-            SetUpModuleWithManifest(dir2,
+            ModuleCompiler.SetUpModuleWithManifest(dir2,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\Services\SimplestModulePossible2.cs");
 
-            SetUpModuleWithManifest(dir3,
+            ModuleCompiler.SetUpModuleWithManifest(dir3,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\Services\LoadedModulesServiceTestingModule.cs");
 
             

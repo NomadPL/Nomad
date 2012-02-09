@@ -109,7 +109,7 @@ namespace Nomad.Tests.FunctionalTests.Updater
         {
             // create the updater module
             string updaterDir = NomadConfigurationSettings.ModuleDirectoryPath;
-            SetUpModuleWithManifest(updaterDir,
+            ModuleCompiler.SetUpModuleWithManifest(updaterDir,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\Updater\UpdaterModule.cs"); 
 
             // version for modules A, B and C
@@ -122,7 +122,7 @@ namespace Nomad.Tests.FunctionalTests.Updater
             moduleAConfiguration.VersionProvider = GetVersionProviderForVersion(versionString);
             moduleAConfiguration.ModulesDependenciesProvider = GetModuleDependenciesOnSingleModule("SimplestModulePossible2",versionString);
             
-            SetUpModuleWithManifest(moduelADir,ModuleCompiler.DefaultSimpleModuleSource,moduleAConfiguration);
+            ModuleCompiler.SetUpModuleWithManifest(moduelADir,ModuleCompiler.DefaultSimpleModuleSource,moduleAConfiguration);
 
             // create module B with the same setting as A (with version v0)
             var moduelBDir = Path.Combine(NomadConfigurationSettings.ModuleDirectoryPath, @"ModuleBDir");
@@ -131,14 +131,14 @@ namespace Nomad.Tests.FunctionalTests.Updater
             moduleAConfiguration.VersionProvider = GetVersionProviderForVersion(versionString);
             moduleAConfiguration.ModulesDependenciesProvider = GetModuleDependenciesOnSingleModule("SimplestModulePossible3", versionString);
 
-            SetUpModuleWithManifest(moduelBDir, ModuleCompiler.DefaultSimpleModuleSourceAlternative, moduleAConfiguration);
+            ModuleCompiler.SetUpModuleWithManifest(moduelBDir, ModuleCompiler.DefaultSimpleModuleSourceAlternative, moduleAConfiguration);
 
             // create module C with no dependency on any other module with version v0
             var moduleCDir = Path.Combine(NomadConfigurationSettings.ModuleDirectoryPath, @"ModuleCDir");
             moduleAConfiguration = ManifestBuilderConfiguration.Default;
 
             moduleAConfiguration.VersionProvider = GetVersionProviderForVersion(versionString);
-            SetUpModuleWithManifest(moduleCDir, ModuleCompiler.DefaultSimpleModuleSourceLastAlternative, moduleAConfiguration);
+            ModuleCompiler.SetUpModuleWithManifest(moduleCDir, ModuleCompiler.DefaultSimpleModuleSourceLastAlternative, moduleAConfiguration);
 
             // create module B in version v1 which depends on module C in version v1
             var moduleBVersionUpperDir = Path.Combine(NomadConfigurationSettings.ModuleDirectoryPath,@"ModuleBUpperDir");
@@ -147,7 +147,7 @@ namespace Nomad.Tests.FunctionalTests.Updater
             moduleAConfiguration.VersionProvider = GetVersionProviderForVersion("2.0.0.0");
             moduleAConfiguration.ModulesDependenciesProvider = GetModuleDependenciesOnSingleModule("SimplestModulePossible3", "2.0.0.0");
             
-            SetUpModuleWithManifest(moduleBVersionUpperDir, ModuleCompiler.DefaultSimpleModuleSourceAlternative, moduleAConfiguration);
+            ModuleCompiler.SetUpModuleWithManifest(moduleBVersionUpperDir, ModuleCompiler.DefaultSimpleModuleSourceAlternative, moduleAConfiguration);
 
             // put module B into repository
             var bRepoModuleInfo = new DirectoryModuleDiscovery(moduleBVersionUpperDir, SearchOption.TopDirectoryOnly)
@@ -210,14 +210,14 @@ namespace Nomad.Tests.FunctionalTests.Updater
         {
             // create the updater module
             string updaterDir = NomadConfigurationSettings.ModuleDirectoryPath;
-            SetUpModuleWithManifest(updaterDir,
+            ModuleCompiler.SetUpModuleWithManifest(updaterDir,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\Updater\UpdaterModule.cs");
 
             // set up two simple modules -- to be loaded into kernel
             string modulaADir = Path.Combine(NomadConfigurationSettings.ModuleDirectoryPath,"moduleA");
             string modulaBDir = Path.Combine(NomadConfigurationSettings.ModuleDirectoryPath,"moduleB");
-            SetUpModuleWithManifest(modulaADir,ModuleCompiler.DefaultSimpleModuleSource);
-            SetUpModuleWithManifest(modulaBDir, ModuleCompiler.DefaultSimpleModuleSourceAlternative);
+            ModuleCompiler.SetUpModuleWithManifest(modulaADir,ModuleCompiler.DefaultSimpleModuleSource);
+            ModuleCompiler.SetUpModuleWithManifest(modulaBDir, ModuleCompiler.DefaultSimpleModuleSourceAlternative);
             var twoSimpleModules = new CompositeModuleDiscovery(
                 new DirectoryModuleDiscovery(modulaADir, SearchOption.TopDirectoryOnly),
                 new DirectoryModuleDiscovery(modulaBDir, SearchOption.TopDirectoryOnly)
@@ -225,7 +225,7 @@ namespace Nomad.Tests.FunctionalTests.Updater
 
             // set up third simple module -- completely independent to be placed in remote repository
             string moduleCDir = Path.Combine(NomadConfigurationSettings.ModuleDirectoryPath, "moduleC");
-            SetUpModuleWithManifest(moduleCDir,ModuleCompiler.DefaultSimpleModuleSourceLastAlternative);
+            ModuleCompiler.SetUpModuleWithManifest(moduleCDir,ModuleCompiler.DefaultSimpleModuleSourceLastAlternative);
             
 
             // put the third one in repository
@@ -283,7 +283,7 @@ namespace Nomad.Tests.FunctionalTests.Updater
         {
             // create the updater module
             string updaterDir = NomadConfigurationSettings.ModuleDirectoryPath;
-            SetUpModuleWithManifest(updaterDir,
+            ModuleCompiler.SetUpModuleWithManifest(updaterDir,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\Updater\UpdaterModule.cs");
 
             // set up two simple modules
@@ -353,7 +353,7 @@ namespace Nomad.Tests.FunctionalTests.Updater
            
             // create the updater module for manual testing
             string updaterDir = NomadConfigurationSettings.ModuleDirectoryPath;
-            SetUpModuleWithManifest(updaterDir,
+            ModuleCompiler.SetUpModuleWithManifest(updaterDir,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\Updater\UpdaterModuleManual.cs");
 
             // set up two simple modules

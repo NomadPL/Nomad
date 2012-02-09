@@ -8,8 +8,7 @@ using TestsShared;
 namespace Nomad.Tests.FunctionalTests.Distributed
 {
 	/// <summary>
-	///		Tests the <see cref="Nomad.Distributed"/> mechanisms at the functional 
-	/// level of testing
+	///		Tests the <see cref="Nomad.Distributed"/> mechanisms at the functional level of testing.
 	/// </summary>
 	[FunctionalTests]
 	public class TopicDistributedNomad
@@ -54,21 +53,20 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		}
 
 
-		[Ignore("Quite hard to implement properly")]
+		[Ignore("Test under progress")]
 		public void module_publishes_module_listens()
 		{
 			// TODO: this code is not refactor aware
-			string sharedInterface = GetSourceCodePath(@"DistributableMessage.cs");
+			string distributableMessage = GetSourceCodePath(@"DistributableMessage.cs");
 			string module1SourceCode = GetSourceCodePath(@"SimplePublishingModule.cs");
 			string module2SourceCode = GetSourceCodePath(@"SimpleListeningModule.cs");
 
 			// prepare module generating messages
-			var sharedModulePath = Compile("shared.dll", sharedInterface);
+			var sharedModulePath = Compile("shared.dll", distributableMessage);
 			Compile("m1.dll", module1SourceCode, sharedModulePath);
 			Compile("m2.dll", module2SourceCode, sharedModulePath);
 
 			// create kernel for those modules 
-			
 		}
 	}
 }

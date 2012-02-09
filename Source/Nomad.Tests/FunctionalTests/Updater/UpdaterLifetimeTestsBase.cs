@@ -54,9 +54,9 @@ namespace Nomad.Tests.FunctionalTests.Updater
             ManifestBuilderConfiguration builderConfiguration = ManifestBuilderConfiguration.Default;
             builderConfiguration.VersionProvider = GetVersionProviderForVersion(versionString);
 
-            SetUpModuleWithManifest(moduleA, ModuleCompiler.DefaultSimpleModuleSource,
+            ModuleCompiler.SetUpModuleWithManifest(moduleA, ModuleCompiler.DefaultSimpleModuleSource,
                                     builderConfiguration);
-            SetUpModuleWithManifest(moduleB, ModuleCompiler.DefaultSimpleModuleSourceAlternative,
+            ModuleCompiler.SetUpModuleWithManifest(moduleB, ModuleCompiler.DefaultSimpleModuleSourceAlternative,
                                     builderConfiguration);
 
             return new CompositeModuleDiscovery(new DirectoryModuleDiscovery(moduleA, SearchOption.TopDirectoryOnly),

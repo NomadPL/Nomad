@@ -21,15 +21,15 @@ namespace Nomad.Tests.FunctionalTests.Modules
             const string dir3 = @"Modules\Dependent1\ModuleC\";
 
             // dependant module generation
-            SetUpModuleWithManifest(dir,
+            ModuleCompiler.SetUpModuleWithManifest(dir,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\Dependencies\DependencyModule1.cs");
 
             // second dependent module generation
-            SetUpModuleWithManifest(dir3,
+            ModuleCompiler.SetUpModuleWithManifest(dir3,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\Dependencies\DependencyModule2.cs");
 
             // depending module generation
-            SetUpModuleWithManifest(dir2,
+            ModuleCompiler.SetUpModuleWithManifest(dir2,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\Dependencies\ModuleWithDependency.cs",
                                     dir + "DependencyModule1.dll", dir3 + "DependencyModule2.dll");
 
@@ -62,16 +62,16 @@ namespace Nomad.Tests.FunctionalTests.Modules
             const string dir3 = @"Modules\Dependent2\ModuleC\";
 
             // dependant module generation
-            SetUpModuleWithManifest(dir,
+            ModuleCompiler.SetUpModuleWithManifest(dir,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\ChainDependencies\DependencyModule1.cs");
 
             // second dependent module generation
-            SetUpModuleWithManifest(dir3,
+            ModuleCompiler.SetUpModuleWithManifest(dir3,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\ChainDependencies\DependencyModule2.cs",
                                     dir + "DependencyModule1.dll");
 
             // third dependent module generation
-            SetUpModuleWithManifest(dir2,
+            ModuleCompiler.SetUpModuleWithManifest(dir2,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\ChainDependencies\ModuleWithDependency.cs",
                                     dir3 + "DependencyModule2.dll");
 
@@ -105,16 +105,16 @@ namespace Nomad.Tests.FunctionalTests.Modules
             const string dir3 = @"Modules\Dependent3\ModuleC\";
 
             // dependant module generation
-            SetUpModuleWithManifest(dir,
+            ModuleCompiler.SetUpModuleWithManifest(dir,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\ChainDependencies\DependencyModule1.cs");
 
             // second dependent module generation
-            SetUpModuleWithManifest(dir3,
+            ModuleCompiler.SetUpModuleWithManifest(dir3,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\ChainDependencies\DependencyModule2.cs",
                                     dir + "DependencyModule1.dll");
 
             // third dependent module generation
-            SetUpModuleWithManifest(dir2,
+            ModuleCompiler.SetUpModuleWithManifest(dir2,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\ChainDependencies\ModuleWithDependency.cs",
                                     dir3 + "DependencyModule2.dll");
 
@@ -143,11 +143,11 @@ namespace Nomad.Tests.FunctionalTests.Modules
             const string dir2 = @"Modules\Dependent4\ModuleB\";
 
             // dependant module generation
-            SetUpModuleWithManifest(dir1,
+            ModuleCompiler.SetUpModuleWithManifest(dir1,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\ErrorInitialize\DependencyModule1.cs");
 
             // second dependent module generation
-            SetUpModuleWithManifest(dir2,
+            ModuleCompiler.SetUpModuleWithManifest(dir2,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\ErrorInitialize\ModuleWithDependency.cs",
                                     dir1 + "DependencyModule1.dll");
 
@@ -173,11 +173,11 @@ namespace Nomad.Tests.FunctionalTests.Modules
             const string dir2 = @"Modules\Dependent5\ModuleB\";
 
             // dependant module generation
-            SetUpModuleWithManifest(dir1,
+            ModuleCompiler.SetUpModuleWithManifest(dir1,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\ErrorLoad\DependencyModule1.cs");
 
             // second dependent module generation
-            SetUpModuleWithManifest(dir2,
+            ModuleCompiler.SetUpModuleWithManifest(dir2,
                                     @"..\Source\Nomad.Tests\FunctionalTests\Data\ErrorLoad\ModuleWithDependency.cs",
                                     dir1 + "DependencyModule1.dll");
 
