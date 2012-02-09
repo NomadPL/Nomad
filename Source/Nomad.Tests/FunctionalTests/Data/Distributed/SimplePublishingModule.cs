@@ -1,12 +1,14 @@
-using System;
-using System.IO;
 using Nomad.Communication.EventAggregation;
 using Nomad.Messages.Loading;
-using Nomad.Tests.FunctionalTests.Kernel.Messages;
+using Nomad.Modules;
 
+/// <summary>
+///		Sample class used for publishing data
+/// </summary>
 public class SimplePublishingModule : Nomad.Modules.IModuleBootstraper
 {
 	private IEventAggregator _aggregator;
+	private IEventAggregatorTicket<NomadAllModulesLoadedMessage> _allModulesLoadedSubscriptionTicket;
 
 	public SimplePublishingModule(IEventAggregator eventAggregator)
 	{
@@ -15,8 +17,17 @@ public class SimplePublishingModule : Nomad.Modules.IModuleBootstraper
 
 	public void OnLoad()
 	{
-		_aggregator.Subscribe<NomadCouldNotLoadModuleMessage>(
-			delegate { EventHandledRegistry.RegisterEventType(typeof(EventAwareModule)); });
+		_allModulesLoadedSubscriptionTicket = _aggregator.Subscribe<NomadAllModulesLoadedMessage>(StartPublishing);
+	}
+
+	private void StartPublishing(NomadAllModulesLoadedMessage obj)
+	{
+		for (int i = 0; i < 5; i++)
+		{
+			string payload = "Sample Message " + i;
+			DistributableMessage message = new DistributableMessage(payload);
+			_aggregator.Publish(message);
+		}
 	}
 
 	public void OnUnLoad()

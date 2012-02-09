@@ -88,7 +88,7 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
         /// <summary>
         ///     Generates the module from <paramref name="sourceFilePath"/> with the additional assemblies presented in <paramref name="dependeciesAssembliesPath"/>.
         /// </summary>
-        /// <param name="sourceFilePath">ource file </param>
+        /// <param name="sourceFilePath">source file </param>
         /// <param name="dependeciesAssembliesPath">Array of the dependecies (assemblies) to be the following assembly dependent on.</param>
         /// <returns>The path to the compiled assembly.</returns>
         public string GenerateModuleFromCode(string sourceFilePath,
@@ -190,7 +190,6 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 			{
 				File.Delete(KeyFile);
 			}
-			KeysGeneratorProgram.Main(new[] { KeyFile });
 
 			// remove those references
 			foreach (string reference in references)

@@ -1,6 +1,11 @@
 using System;
 using System.IO;
+using System.Threading;
+using Nomad.Core;
+using Nomad.Distributed;
 using Nomad.KeysGenerator;
+using Nomad.Messages.Loading;
+using Nomad.Modules.Discovery;
 using Nomad.Tests.FunctionalTests.Fixtures;
 using NUnit.Framework;
 using TestsShared;
@@ -13,27 +18,23 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 	[FunctionalTests]
 	public class TopicDistributedNomad
 	{
-		private ModuleCompiler _compiler = new ModuleCompiler();
-		private string _runtimePath;
-		private const string KeyFile = @"KEY_FILE.xml";
-		private const string RUNTIME_DIR = @"FunctionalTests\Distributed\";
-		private const string SOURDE_DIR = @"..\Source\Nomad.Tests\FunctionalTests\Distributed\Data";
+		private readonly ModuleCompiler _compiler = new ModuleCompiler();
+		private const string SOURDE_DIR = @"..\Source\Nomad.Tests\FunctionalTests\Data\Distributed";
+		private NomadKernel _listenerKernel;
+		private NomadKernel _publisherKernel;
 
-		[TestFixtureSetUp]
-		public void fixture_set_up()
+		[TearDown]
+		public void tear_down()
 		{
-			if (File.Exists(KeyFile))
+			if (_listenerKernel != null)
 			{
-				File.Delete(KeyFile);
+				_listenerKernel.Dispose();
 			}
-			KeysGeneratorProgram.Main(new[] {KeyFile});
-		}
 
-		[SetUp]
-		public void set_up()
-		{
-			// place where module for testing 
-			_runtimePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, RUNTIME_DIR);
+			if (_publisherKernel != null)
+			{
+				_publisherKernel.Dispose();
+			}
 		}
 
 		private static String GetSourceCodePath(String codeLocation)
@@ -42,31 +43,91 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			return Path.Combine(dirPath, codeLocation);
 		}
 
-		private String Compile(string outputName, string pathToCode, params string[] dependecies)
-		{
-			_compiler.OutputDirectory = _runtimePath;
-			_compiler.OutputName = outputName;
-			var modulePath = _compiler.GenerateModuleFromCode(pathToCode, dependecies);
-			_compiler.GenerateManifestForModule(modulePath, KeyFile);
 
-			return modulePath;
-		}
-
-
-		[Ignore("Test under progress")]
+		[Test]
 		public void module_publishes_module_listens()
 		{
 			// TODO: this code is not refactor aware
-			string distributableMessage = GetSourceCodePath(@"DistributableMessage.cs");
-			string module1SourceCode = GetSourceCodePath(@"SimplePublishingModule.cs");
-			string module2SourceCode = GetSourceCodePath(@"SimpleListeningModule.cs");
+			string sharedModuleSourcePath = GetSourceCodePath(@"DistributableMessage.cs");
+			string publisherModuleSourcePath = GetSourceCodePath(@"SimplePublishingModule.cs");
+			string listenerModuleSourcePath = GetSourceCodePath(@"SimpleListeningModule.cs");
 
-			// prepare module generating messages
-			var sharedModulePath = Compile("shared.dll", distributableMessage);
-			Compile("m1.dll", module1SourceCode, sharedModulePath);
-			Compile("m2.dll", module2SourceCode, sharedModulePath);
+			const string sharedPath = @"Modules\Distributed\Shared\";
+			const string publisherPath = @"Modules\Distributed\Publisher\";
+			const string listenerPath = @"Modules\Distributed\Listener\";
 
-			// create kernel for those modules 
+			// shared module generation
+			_compiler.OutputDirectory = sharedPath;
+			_compiler.GenerateModuleFromCode(sharedModuleSourcePath);
+
+
+			string keyFile = @"alaMaKota.xml";
+			if (File.Exists(keyFile))
+			{
+				File.Delete(keyFile);
+			}
+			KeysGeneratorProgram.Main(new[] {keyFile});
+
+			// listener module generation
+			_compiler.OutputDirectory = listenerPath;
+			File.Copy(sharedPath + "DistributableMessage.dll", Path.Combine(listenerPath, "DistributableMessage.dll"), true);
+			_compiler.GenerateModuleFromCode(listenerModuleSourcePath, sharedPath + "DistributableMessage.dll");
+			var builder = new Nomad.Utils.ManifestCreator.ManifestBuilder(@"TEST_ISSUER",
+			                                                              keyFile,
+			                                                              @"SimpleListeningModule.dll",
+			                                                              listenerPath);
+			builder.CreateAndPublish();
+
+			// publisher module generation
+			_compiler.OutputDirectory = publisherPath;
+			File.Copy(sharedPath + "DistributableMessage.dll", Path.Combine(publisherPath, "DistributableMessage.dll"), true);
+			_compiler.GenerateModuleFromCode(publisherModuleSourcePath, sharedPath + "DistributableMessage.dll");
+			builder = new Nomad.Utils.ManifestCreator.ManifestBuilder(@"TEST_ISSUER",
+			                                                          keyFile,
+			                                                          @"SimplePublishingModule.dll",
+			                                                          publisherPath);
+			builder.CreateAndPublish();
+
+			if (File.Exists(keyFile))
+			{
+				File.Delete(keyFile);
+			}
+
+			// creating listener module kernel
+			string site1 = "net.tcp://127.0.0.1:5555/IDEA";
+			NomadConfiguration config = NomadConfiguration.Default;
+			config.DistributedConfiguration = DistributedConfiguration.Default;
+			config.DistributedConfiguration.LocalURI = new Uri(site1);
+			_listenerKernel = new NomadKernel(config);
+			var listenerDiscovery = new DirectoryModuleDiscovery(listenerPath, SearchOption.TopDirectoryOnly);
+			_listenerKernel.LoadModules(listenerDiscovery);
+		
+			// creating publisher module kernel
+			string site2 = "net.tcp://127.0.0.1:6666/IDEA";
+			NomadConfiguration config2 = NomadConfiguration.Default;
+			config2.DistributedConfiguration = DistributedConfiguration.Default;
+			config2.DistributedConfiguration.LocalURI = new Uri(site2);
+			config2.DistributedConfiguration.URLs.Add(site1);
+			_publisherKernel = new NomadKernel(config2);
+			var publisherDiscovery = new DirectoryModuleDiscovery(publisherPath, SearchOption.TopDirectoryOnly);
+			_publisherKernel.LoadModules(publisherDiscovery);
+			
+			_publisherKernel.UnloadModules();
+			_listenerKernel.UnloadModules();
+
+			var fi = new FileInfo(@"Modules\Distributed\Listener\CounterFile");
+			if (fi.Exists)
+			{
+				StreamReader counterReader = fi.OpenText();
+				int value = Convert.ToInt32(counterReader.ReadLine());
+				// Verifying that locally the event aggregator works properly
+				Assert.AreEqual(6, value);
+				counterReader.Close();
+			}
+			else
+			{
+				Assert.Fail("No counter file from listener module in distributed configuration");
+			}
 		}
 	}
 }
