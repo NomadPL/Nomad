@@ -18,10 +18,10 @@ namespace Nomad.Tests.FunctionalTests.Distributed.Data
 
 		public void OnLoad()
 		{
-			var ticket = _eventAggregator.Subscribe<SharedInterfaces>(CallBack);
+			var ticket = _eventAggregator.Subscribe<DistributableMessage>(CallBack);
 		}
 
-		private void CallBack(SharedInterfaces obj)
+		private void CallBack(DistributableMessage obj)
 		{
 			Console.WriteLine("Recieved: {0}", obj.Payload);
 		}

@@ -87,7 +87,7 @@ namespace Nomad.Distributed.Communication
 
 		public void OnPublishControl(NomadMessage message)
 		{
-			Loggger.Debug(string.Format("Accuiered message {0}", message));
+			Loggger.Debug(string.Format("Acquired message {0}", message));
 
 			// propagate message to the local subscribers
 			LocalEventAggregator.Publish(message);
@@ -98,25 +98,28 @@ namespace Nomad.Distributed.Communication
 
 		public void OnPublish(byte[] byteStream, TypeDescriptor typeDescriptor)
 		{
-			Loggger.Debug(string.Format("Accuiered message of type {0}", typeDescriptor));
+			Loggger.Debug(string.Format("Acquired message of type {0}", typeDescriptor));
 
 
 			try
 			{
 				// try recreating this type 
 				Type type = Type.GetType(typeDescriptor.QualifiedName);
-				var nomadVersion = new Version(type.Assembly.GetName().Version);
-
-				if (!nomadVersion.Equals(typeDescriptor.Version))
+				if (type != null)
 				{
-					throw new InvalidCastException("The version of the assembly does not match");
+					var nomadVersion = new Version(type.Assembly.GetName().Version);
+
+					if (!nomadVersion.Equals(typeDescriptor.Version))
+					{
+						throw new InvalidCastException("The version of the assembly does not match");
+					}
 				}
 
 				// try deserializing object
 				Object sendObject = Deserialize(byteStream);
 				
-				// check if o is assiglable
-				if (!type.IsAssignableFrom(sendObject.GetType()))
+				// check if o is assignable
+				if (type != null && !type.IsInstanceOfType(sendObject))
 				{
 					throw new InvalidCastException("The sent object cannot be casted to sent type");
 				}
@@ -126,7 +129,7 @@ namespace Nomad.Distributed.Communication
 				var methodInfo = LocalEventAggregator.GetType().GetMethod("Publish");
 				var goodMethodInfo = methodInfo.MakeGenericMethod(type);
 
-				goodMethodInfo.Invoke(LocalEventAggregator, new object[]{sendObject});
+				goodMethodInfo.Invoke(LocalEventAggregator, new[]{sendObject});
 			}
 			catch (Exception e)
 			{
@@ -176,7 +179,7 @@ namespace Nomad.Distributed.Communication
 				catch (Exception e)
 				{
 					Loggger.Warn("DeSerialization warning: ", e);
-					throw e;
+					throw;
 				}
 			}
 		}
@@ -184,7 +187,7 @@ namespace Nomad.Distributed.Communication
 		private byte[] Serialize(Object obj)
 		{
 			MemoryStream stream = null;
-			byte[] bytes = null;
+			byte[] bytes;
 			try
 			{
 				IFormatter formatter = new BinaryFormatter();
@@ -231,7 +234,7 @@ namespace Nomad.Distributed.Communication
 				catch (Exception e)
 				{
 					Loggger.Warn(string.Format("Could not sent message '{0}' to DEA: {1}", message, dea), e);
-					throw e;
+					throw;
 				}
 			}
 		}
@@ -251,7 +254,7 @@ namespace Nomad.Distributed.Communication
 				catch (Exception e)
 				{
 					Loggger.Warn("Exception during sending to DEA", e);
-					throw e;
+					throw;
 				}
 			}
 		}

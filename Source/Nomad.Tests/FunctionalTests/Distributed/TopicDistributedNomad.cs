@@ -58,7 +58,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		public void module_publishes_module_listens()
 		{
 			// TODO: this code is not refactor aware
-			string sharedInterface = GetSourceCodePath(@"SharedInterfaces.cs");
+			string sharedInterface = GetSourceCodePath(@"DistributableMessage.cs");
 			string module1SourceCode = GetSourceCodePath(@"SimplePublishingModule.cs");
 			string module2SourceCode = GetSourceCodePath(@"SimpleListeningModule.cs");
 

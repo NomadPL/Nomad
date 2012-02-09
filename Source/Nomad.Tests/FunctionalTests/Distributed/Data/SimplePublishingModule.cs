@@ -1,4 +1,5 @@
 using Nomad.Communication.EventAggregation;
+using Nomad.Messages.Loading;
 using Nomad.Modules;
 
 namespace Nomad.Tests.FunctionalTests.Distributed.Data
@@ -9,6 +10,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed.Data
 	public class SimplePublishingModule : IModuleBootstraper
 	{
 		private IEventAggregator _aggregator;
+		private IEventAggregatorTicket<NomadAllModulesLoadedMessage> _allModulesLoadedSubscriptionTicket;
 
 		public SimplePublishingModule(IEventAggregator eventAggregator)
 		{
@@ -17,11 +19,15 @@ namespace Nomad.Tests.FunctionalTests.Distributed.Data
 
 		public void OnLoad()
 		{
-			// TODO: maybe we should wait for all modules loaded
+			_allModulesLoadedSubscriptionTicket = _aggregator.Subscribe<NomadAllModulesLoadedMessage>(StartPublishing);
+		}
+
+		private void StartPublishing(NomadAllModulesLoadedMessage obj)
+		{
 			for (int i = 0; i < 5; i++)
 			{
 				var payload = "Sample Message " + i;
-				var message = new SharedInterfaces(payload);
+				var message = new DistributableMessage(payload);
 				_aggregator.Publish(message);
 			}
 		}

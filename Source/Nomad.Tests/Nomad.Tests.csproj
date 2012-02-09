@@ -108,7 +108,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FunctionalTests\Distributed\BasicDistributedNomad.cs" />
-    <Compile Include="FunctionalTests\Distributed\Data\SharedInterfaces.cs" />
+    <Compile Include="FunctionalTests\Distributed\Data\DistributableMessage.cs" />
     <Compile Include="FunctionalTests\Distributed\Data\SimpleListeningModule.cs" />
     <Compile Include="FunctionalTests\Distributed\Data\SimplePublishingModule.cs" />
     <Compile Include="FunctionalTests\Distributed\TopicDistributedNomad.cs" />
