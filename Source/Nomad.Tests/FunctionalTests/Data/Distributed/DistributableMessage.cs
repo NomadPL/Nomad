@@ -1,6 +1,10 @@
+using System;
+using System.Runtime.Serialization;
+
 /// <summary>
 ///		Sample class with payload data inside
 /// </summary>
+[Serializable]
 public class DistributableMessage
 {
 	private readonly string _payload;

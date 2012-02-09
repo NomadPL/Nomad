@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.Serialization;
-using System.Text;
+using Nomad.Messages;
 
-namespace Nomad.Messages.Distributed
+namespace Nomad.Tests.FunctionalTests.Distributed
 {
 	[DataContract]
 	[Serializable]

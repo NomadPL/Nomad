@@ -1,6 +1,5 @@
 using System;
 using System.Runtime.Serialization;
-using Nomad.Messages.Distributed;
 
 namespace Nomad.Messages
 {
@@ -12,7 +11,6 @@ namespace Nomad.Messages
 	/// </remarks>
 	[DataContract]
 	[Serializable]
-	[KnownType(typeof(NomadSimpleMessage))]
 	public abstract class NomadMessage
 	{
 		/// <summary>
