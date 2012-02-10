@@ -53,13 +53,14 @@ namespace Nomad.Modules
 			var asmName = AssemblyName.GetAssemblyName(moduleInfo.AssemblyPath);
 			var loadedAsembly = Assembly.Load(asmName);
 
+			var folderPath = Path.GetDirectoryName(moduleInfo.AssemblyPath);
+			AppDomain.CurrentDomain.AppendPrivatePath(folderPath);
+
 			// perform full blown loading of all of the references types
 			// to provide search pathing (onlye one level of such things is done)
 			// FIXME: this is quite a buggy way of solving this problem
 			foreach (var asm in loadedAsembly.GetReferencedAssemblies())
 			{
-				var folderPath = Path.GetDirectoryName(moduleInfo.AssemblyPath);
-				AppDomain.CurrentDomain.AppendPrivatePath(folderPath);
 				AppDomain.CurrentDomain.Load(asm);
 			}
 
