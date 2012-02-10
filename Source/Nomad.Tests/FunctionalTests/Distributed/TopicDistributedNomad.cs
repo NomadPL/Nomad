@@ -121,7 +121,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 				StreamReader counterReader = fi.OpenText();
 				int value = Convert.ToInt32(counterReader.ReadLine());
 				// Verifying that locally the event aggregator works properly
-				Assert.AreEqual(6, value);
+				Assert.AreEqual(5, value);
 				counterReader.Close();
 			}
 			else

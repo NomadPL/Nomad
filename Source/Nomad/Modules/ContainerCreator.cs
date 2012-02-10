@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using System.ServiceModel;
 using Castle.Windsor;
 using log4net;
@@ -31,9 +32,7 @@ namespace Nomad.Modules
 		private readonly IWindsorContainer _windsorContainer;
 		private ServiceHost _distributedEventAggregatorServiceHost;
 
-		private ILog _logger
-		             ;
-
+		private ILog _logger;
 		private ILoggerRepository _repository;
 
 
@@ -45,8 +44,9 @@ namespace Nomad.Modules
 		/// </remarks>
 		public ContainerCreator()
 		{
-			_windsorContainer = new WindsorContainer();
+			_windsorContainer = new WindsorContainer();			
 		}
+
 
 		/// <summary>
 		///     IWindsor container which works as main backend.
