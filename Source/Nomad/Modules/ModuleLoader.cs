@@ -58,7 +58,7 @@ namespace Nomad.Modules
 
 			// perform full blown loading of all of the references types
 			// to provide search pathing (onlye one level of such things is done)
-			// FIXME: this is quite a buggy way of solving this problem
+
 			foreach (var asm in loadedAsembly.GetReferencedAssemblies())
 			{
 				AppDomain.CurrentDomain.Load(asm);

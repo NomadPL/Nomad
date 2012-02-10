@@ -6,6 +6,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.ServiceModel;
 using log4net;
 using Nomad.Communication.EventAggregation;
+using Nomad.Core;
 using Nomad.Messages;
 using Nomad.Messages.Distributed;
 using Version = Nomad.Utils.Version;
@@ -24,9 +25,10 @@ namespace Nomad.Distributed.Communication
 	{
 		// TODO: make this value injectable ?
 		private const int MESSAGE_SIZE = 2048;
-		private static readonly ILog Loggger = LogManager.GetLogger(typeof (DistributedEventAggregator));
+		private static readonly ILog Loggger = LogManager.GetLogger(NomadConstants.NOMAD_LOGGER_REPOSITORY,
+			typeof (DistributedEventAggregator));
 
-		private static IEventAggregator _localEventAggregator;
+		private static IEventAggregator localEventAggregator;
 
 
 		private static readonly object LockObject = new object();
@@ -50,15 +52,15 @@ namespace Nomad.Distributed.Communication
 
 		private static IEventAggregator LocalEventAggregator
 		{
-			get { return _localEventAggregator; }
+			get { return localEventAggregator; }
 			set
 			{
 				lock (LockObject)
 				{
-					if (_localEventAggregator != null)
+					if (localEventAggregator != null)
 						throw new InvalidOperationException("The local event aggregator can be set only once");
 
-					_localEventAggregator = value;
+					localEventAggregator = value;
 				}
 			}
 		}
@@ -151,7 +153,7 @@ namespace Nomad.Distributed.Communication
 		public IEventAggregatorTicket<T> Subscribe<T>(Action<T> action, DeliveryMethod deliveryMethod) where T : class
 		{
 			// subscribe on local event
-			return _localEventAggregator.Subscribe(action, deliveryMethod);
+			return localEventAggregator.Subscribe(action, deliveryMethod);
 
 			// subscribe on remote or not by now
 		}
@@ -159,7 +161,7 @@ namespace Nomad.Distributed.Communication
 		public void Publish<T>(T message) where T : class
 		{
 			// try publishing message in the local system on this machine
-			_localEventAggregator.Publish(message);
+			localEventAggregator.Publish(message);
 
 			// filter local NomadMessage
 			if (message is NomadMessage)
