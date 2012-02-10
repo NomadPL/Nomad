@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Policy;
+using log4net;
+using log4net.Config;
 using Nomad.Communication.EventAggregation;
 using Nomad.Communication.ServiceLocation;
 using Nomad.Exceptions;
@@ -19,6 +22,8 @@ namespace Nomad.Core
 	{
 		private ModuleManager _moduleManager;
 		private ContainerCreator _moduleLoaderCreator;
+
+		private static readonly ILog Logger = LogManager.GetLogger(typeof (NomadKernel));
 
 		/// <summary>
 		/// Initializes new instance of the <see cref="NomadKernel"/> class.
@@ -47,6 +52,9 @@ namespace Nomad.Core
 
 			KernelAppDomain = AppDomain.CurrentDomain;
 
+			// use logger for this domain and the other domain too
+			RegisterLoggerService();
+
 			// create another app domain and register very important services
 			RegisterCoreServices(nomadConfiguration);
 
@@ -54,6 +62,27 @@ namespace Nomad.Core
 			RegisterAdditionalServices();
 		}
 
+		private void RegisterLoggerService()
+		{
+			try
+			{
+				var file = new FileInfo(KernelConfiguration.LoggerConfigurationFilePath);
+				XmlConfigurator.Configure(file);
+			}
+			catch (Exception)
+			{
+				// NOTE: eat the exception here - fallback mechanism if user not specified other ways
+				BasicConfigurator.Configure();
+			}
+
+			// test logger this way
+			Logger.Info("The logger is enabled at levels:");
+			Logger.Info(string.Format("Debug: {0}", Logger.IsDebugEnabled));
+			Logger.Info(string.Format("Info: {0}", Logger.IsInfoEnabled));
+			Logger.Info(string.Format("Warn: {0}", Logger.IsWarnEnabled));
+			Logger.Info(string.Format("Error: {0}", Logger.IsErrorEnabled));
+			Logger.Info(string.Format("Fatal: {0}", Logger.IsFatalEnabled));
+		}
 
 		/// <summary>
 		/// Initializes new instance of the <see cref="NomadKernel"/> class.

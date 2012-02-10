@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using log4net.Config;
 using Nomad.Distributed;
 using Nomad.Distributed.Communication;
 using Nomad.Modules;
@@ -69,18 +70,19 @@ namespace Nomad.Core
 			get
 			{
 				return new NomadConfiguration
-						   {
-							   ModuleFilter = new CompositeModuleFilter(new IModuleFilter[] {}),
-							   DependencyChecker = new DependencyChecker(),
-							   UpdaterType = UpdaterType.Manual,
-							   ModulePackager = new ModulePackager(),
-							   ModuleFinder = new ModuleFinder(),
-							   ModuleDirectoryPath =
-								   Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "modules"),
-							   SignatureProvider =
-								   new SignatureProvider(new NullSignatureAlgorithm()),
-								DistributedConfiguration = null
-						   };
+				       	{
+				       		ModuleFilter = new CompositeModuleFilter(new IModuleFilter[] {}),
+				       		DependencyChecker = new DependencyChecker(),
+				       		UpdaterType = UpdaterType.Manual,
+				       		ModulePackager = new ModulePackager(),
+				       		ModuleFinder = new ModuleFinder(),
+				       		LoggerConfigurationFilePath = @"log4net.xml",
+				       		ModuleDirectoryPath =
+				       			Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "modules"),
+				       		SignatureProvider =
+				       			new SignatureProvider(new NullSignatureAlgorithm()),
+				       		DistributedConfiguration = null
+				       	};
 			}
 		}
 
@@ -95,7 +97,24 @@ namespace Nomad.Core
 		private ISignatureProvider _signatureProvider;
 		private UpdaterType _updaterType;
 		private DistributedConfiguration _distributedConfiguration;
+		private string _loggerConfigurationFilePath;
 
+		/// <summary>
+		///		Determines the place where the <see cref="log4net"/> xml configuration
+		/// file is placed.
+		/// <para>
+		///		If not specified properly the logger will fallback to <see cref="BasicConfigurator"/>
+		/// </para>
+		/// </summary>
+		public string LoggerConfigurationFilePath
+		{
+			get { return _loggerConfigurationFilePath; }
+			set
+			{
+				AssertNotFrozen();
+				_loggerConfigurationFilePath = value;
+			}
+		}
 
 		/// <summary>
 		///<para>     
@@ -221,13 +240,14 @@ namespace Nomad.Core
 		/// </value>
 		public DistributedConfiguration DistributedConfiguration
 		{
-			get { return _distributedConfiguration;  }
+			get { return _distributedConfiguration; }
 			set
 			{
 				AssertNotFrozen();
 				_distributedConfiguration = value;
 			}
 		}
+
 		#endregion
 	}
 }
