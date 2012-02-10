@@ -111,9 +111,6 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			_publisherKernel = new NomadKernel(config2);
 			var publisherDiscovery = new DirectoryModuleDiscovery(publisherPath, SearchOption.TopDirectoryOnly);
 			_publisherKernel.LoadModules(publisherDiscovery);
-			
-			_publisherKernel.UnloadModules();
-			_listenerKernel.UnloadModules();
 
 			var fi = new FileInfo(@"Modules\Distributed\Listener\CounterFile");
 			if (fi.Exists)
@@ -121,7 +118,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 				StreamReader counterReader = fi.OpenText();
 				int value = Convert.ToInt32(counterReader.ReadLine());
 				// Verifying that locally the event aggregator works properly
-				Assert.AreEqual(6, value);
+				Assert.AreEqual(5, value);
 				counterReader.Close();
 			}
 			else
