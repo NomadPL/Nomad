@@ -1,17 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Security.Policy;
 using log4net;
-using log4net.Config;
+using log4net.Repository;
 using Nomad.Communication.EventAggregation;
 using Nomad.Communication.ServiceLocation;
+using Nomad.Distributed;
 using Nomad.Exceptions;
 using Nomad.Messages.Loading;
 using Nomad.Modules;
 using Nomad.Modules.Discovery;
 using Nomad.Services;
 using Nomad.Updater;
+using Nomad.Utils;
 
 namespace Nomad.Core
 {
@@ -20,10 +21,10 @@ namespace Nomad.Core
 	/// </summary>
 	public class NomadKernel : IModulesOperations, IDisposable
 	{
-		private ModuleManager _moduleManager;
+		private ILog _logger;
 		private ContainerCreator _moduleLoaderCreator;
-
-		private static readonly ILog Logger = LogManager.GetLogger(typeof (NomadKernel));
+		private ModuleManager _moduleManager;
+		private ILoggerRepository _repository;
 
 		/// <summary>
 		/// Initializes new instance of the <see cref="NomadKernel"/> class.
@@ -60,28 +61,6 @@ namespace Nomad.Core
 
 			// registering additional services ie. updater + listing + languages... etc
 			RegisterAdditionalServices();
-		}
-
-		private void RegisterLoggerService()
-		{
-			try
-			{
-				var file = new FileInfo(KernelConfiguration.LoggerConfigurationFilePath);
-				XmlConfigurator.Configure(file);
-			}
-			catch (Exception)
-			{
-				// NOTE: eat the exception here - fallback mechanism if user not specified other ways
-				BasicConfigurator.Configure();
-			}
-
-			// test logger this way
-			Logger.Info("The logger is enabled at levels:");
-			Logger.Info(string.Format("Debug: {0}", Logger.IsDebugEnabled));
-			Logger.Info(string.Format("Info: {0}", Logger.IsInfoEnabled));
-			Logger.Info(string.Format("Warn: {0}", Logger.IsWarnEnabled));
-			Logger.Info(string.Format("Error: {0}", Logger.IsErrorEnabled));
-			Logger.Info(string.Format("Fatal: {0}", Logger.IsFatalEnabled));
 		}
 
 		/// <summary>
@@ -146,6 +125,11 @@ namespace Nomad.Core
 
 		public void Dispose()
 		{
+			if (_repository != null)
+			{
+				_repository.Shutdown();
+			}
+
 			if (_moduleLoaderCreator != null)
 			{
 				_moduleLoaderCreator.Dispose();
@@ -222,6 +206,16 @@ namespace Nomad.Core
 
 		#endregion
 
+		private void RegisterLoggerService()
+		{
+			var loggerHelper = new LoggingHelper();
+			string configuration = KernelConfiguration.KernelLoggerConfigurationFilePath;
+			loggerHelper.RegisterLogging(configuration, typeof (NomadKernel));
+
+			_logger = loggerHelper.Logger;
+			_repository = loggerHelper.Repository;
+		}
+
 		private void RegisterCoreServices(NomadConfiguration nomadConfiguration)
 		{
 			ModuleAppDomain = AppDomain.CreateDomain("Modules AppDomain",
@@ -242,8 +236,9 @@ namespace Nomad.Core
 				_moduleLoaderCreator = (ContainerCreator)
 				                       ModuleAppDomain.CreateInstanceAndUnwrap(asmName, typeName);
 
-				var distributedConfiguration = nomadConfiguration.DistributedConfiguration;
-				_moduleLoaderCreator.Install(distributedConfiguration);
+				DistributedConfiguration distributedConfiguration = nomadConfiguration.DistributedConfiguration;
+				String loggerConfiguration = KernelConfiguration.ModulesLoggerConfigurationFilePath;
+				_moduleLoaderCreator.Install(distributedConfiguration, loggerConfiguration);
 
 				// create facade for event aggregator combining proxy and on site object
 				EventAggregator = new ForwardingEventAggregator(_moduleLoaderCreator.EventAggregatorOnModulesDomain,
