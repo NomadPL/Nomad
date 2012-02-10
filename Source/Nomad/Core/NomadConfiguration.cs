@@ -76,7 +76,8 @@ namespace Nomad.Core
 				       		UpdaterType = UpdaterType.Manual,
 				       		ModulePackager = new ModulePackager(),
 				       		ModuleFinder = new ModuleFinder(),
-				       		LoggerConfigurationFilePath = @"log4net.xml",
+				       		KernelLoggerConfigurationFilePath = @"kernel_log4net.xml",
+				       		ModulesLoggerConfigurationFilePath = @"modules_log4net.xml",
 				       		ModuleDirectoryPath =
 				       			Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "modules"),
 				       		SignatureProvider =
@@ -89,15 +90,27 @@ namespace Nomad.Core
 		#region Configuration
 
 		private IDependencyChecker _dependencyChecker;
+		private DistributedConfiguration _distributedConfiguration;
+		private string _kernelLoggerConfigurationFilePath;
 		private string _moduleDirectoryPath;
 		private IModuleFilter _moduleFilter;
 		private IModuleFinder _moduleFinder;
 		private IModulePackager _modulePackager;
 		private IModulesRepository _moduleRepository;
+		private string _modulesLoggerConfigurationFilePath;
 		private ISignatureProvider _signatureProvider;
 		private UpdaterType _updaterType;
-		private DistributedConfiguration _distributedConfiguration;
-		private string _loggerConfigurationFilePath;
+
+
+		public string ModulesLoggerConfigurationFilePath
+		{
+			get { return _modulesLoggerConfigurationFilePath; }
+			set
+			{
+				AssertNotFrozen();
+				_modulesLoggerConfigurationFilePath = value;
+			}
+		}
 
 		/// <summary>
 		///		Determines the place where the <see cref="log4net"/> xml configuration
@@ -106,13 +119,13 @@ namespace Nomad.Core
 		///		If not specified properly the logger will fallback to <see cref="BasicConfigurator"/>
 		/// </para>
 		/// </summary>
-		public string LoggerConfigurationFilePath
+		public string KernelLoggerConfigurationFilePath
 		{
-			get { return _loggerConfigurationFilePath; }
+			get { return _kernelLoggerConfigurationFilePath; }
 			set
 			{
 				AssertNotFrozen();
-				_loggerConfigurationFilePath = value;
+				_kernelLoggerConfigurationFilePath = value;
 			}
 		}
 

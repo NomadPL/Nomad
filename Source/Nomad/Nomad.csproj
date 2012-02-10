@@ -109,6 +109,7 @@
     <Compile Include="Communication\EventAggregation\NullGuiThreadProvider.cs" />
     <Compile Include="Communication\EventAggregation\TicketDisposedArgs.cs" />
     <Compile Include="Communication\EventAggregation\WpfGuiThreadProvider.cs" />
+    <Compile Include="Core\NomadConstants.cs" />
     <Compile Include="Distributed\Communication\Resolvers\IResolver.cs" />
     <Compile Include="Distributed\Communication\Resolvers\ResolverBase.cs" />
     <Compile Include="Distributed\Communication\Resolvers\ResolverFactory.cs" />
@@ -192,6 +193,7 @@
     <Compile Include="Messages\Updating\NomadUpdatesReadyMessage.cs" />
     <Compile Include="Updater\UpdaterStatus.cs" />
     <Compile Include="Updater\UpdaterType.cs" />
+    <Compile Include="Utils\LoggingHelper.cs" />
     <Compile Include="Utils\ManifestCreator\FileSignerProviders\ISignedFilesProvider.cs" />
     <Compile Include="Utils\ManifestCreator\DependenciesProvider\IModulesDependenciesProvider.cs" />
     <Compile Include="Utils\ManifestCreator\DependenciesProvider\FromFileModulesDependencyProvider.cs" />
@@ -253,7 +255,10 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="log4net.xml">
+    <Content Include="modules_log4net.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="kernel_log4net.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

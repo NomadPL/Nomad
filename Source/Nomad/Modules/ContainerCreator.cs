@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Runtime.Remoting;
 using System.ServiceModel;
 using Castle.Windsor;
+using log4net;
+using log4net.Repository;
 using Nomad.Communication.EventAggregation;
 using Nomad.Communication.ServiceLocation;
 using Nomad.Core;
@@ -9,6 +10,7 @@ using Nomad.Distributed;
 using Nomad.Distributed.Communication;
 using Nomad.Distributed.Communication.Resolvers;
 using Nomad.Modules.Installers;
+using Nomad.Utils;
 
 namespace Nomad.Modules
 {
@@ -28,6 +30,11 @@ namespace Nomad.Modules
 	{
 		private readonly IWindsorContainer _windsorContainer;
 		private ServiceHost _distributedEventAggregatorServiceHost;
+
+		private ILog _logger
+		             ;
+
+		private ILoggerRepository _repository;
 
 
 		/// <summary>
@@ -65,6 +72,17 @@ namespace Nomad.Modules
 			get { return _windsorContainer.Resolve<IServiceLocator>(); }
 		}
 
+		#region IDisposable Members
+
+		public void Dispose()
+		{
+			if (_distributedEventAggregatorServiceHost != null)
+			{
+				_distributedEventAggregatorServiceHost.Close();
+			}
+		}
+
+		#endregion
 
 		/// <summary>
 		///     Initializes new instance of the <see cref="ModuleLoader"/> class as an implementation of <see cref="IModuleLoader"/>
@@ -83,20 +101,20 @@ namespace Nomad.Modules
 		private void RegisterServiceHostDEA(DistributedConfiguration distributedConfiguration)
 		{
 			// TODO: refactor this code to be working with IInstanceProvider classes and whole WCF stack
-			_distributedEventAggregatorServiceHost = new ServiceHost(typeof(DistributedEventAggregator));
+			_distributedEventAggregatorServiceHost = new ServiceHost(typeof (DistributedEventAggregator));
 			_distributedEventAggregatorServiceHost.AddServiceEndpoint
 				(
-					typeof(IDistributedEventAggregator),
+					typeof (IDistributedEventAggregator),
 					new NetTcpBinding(),
-					
 					distributedConfiguration.LocalURI
 				);
 			_distributedEventAggregatorServiceHost.Open();
-
 		}
 
-		public void Install(DistributedConfiguration distributedConfiguration)
+		public void Install(DistributedConfiguration distributedConfiguration, string loggerConfiguration)
 		{
+			RegisterLogging(loggerConfiguration);
+
 			if (distributedConfiguration == null)
 			{
 				// use nomad specific installer for that
@@ -116,7 +134,9 @@ namespace Nomad.Modules
 					);
 
 				// TODO: make registering resolver with container later
-				var dea = (DistributedEventAggregator) _windsorContainer.Resolve<IEventAggregator>(NomadDistributedEventAggregatorInstaller.ON_SITE_NAME);
+				var dea =
+					(DistributedEventAggregator)
+					_windsorContainer.Resolve<IEventAggregator>(NomadDistributedEventAggregatorInstaller.ON_SITE_NAME);
 				var resolver = new ResolverFactory(distributedConfiguration);
 				dea.RemoteDistributedEventAggregator = resolver.Resolve();
 
@@ -125,12 +145,12 @@ namespace Nomad.Modules
 			}
 		}
 
-		public void Dispose()
+		private void RegisterLogging(string loggerConfiguration)
 		{
-			if (_distributedEventAggregatorServiceHost != null)
-			{
-				_distributedEventAggregatorServiceHost.Close();
-			}
+			var helper = new LoggingHelper();
+			helper.RegisterLogging(loggerConfiguration, typeof (ContainerCreator));
+			_logger = helper.Logger;
+			_repository = helper.Repository;
 		}
 	}
 }
