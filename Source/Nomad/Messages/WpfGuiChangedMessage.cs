@@ -9,7 +9,7 @@ namespace Nomad.Messages
     /// <remarks>
     /// May be published only once per appdomain
     /// </remarks>
-    public class WpfGuiChangedMessage
+    public class WpfGuiChangedMessage : NomadMessage
     {
         /// <summary>
         /// Provides <see cref="guiThreadProvider"/>
@@ -24,5 +24,10 @@ namespace Nomad.Messages
         /// Gui thread which should be used in specified <see cref="AppDomain"/>
         /// </summary>
         public IGuiThreadProvider NewGuiThreadProvider { get; private set; }
+
+    	public override string ToString()
+    	{
+    		return Message;
+    	}
     }
 }

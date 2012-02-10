@@ -85,7 +85,7 @@ namespace Nomad.Distributed.Communication
 
 		#region IDistributedEventAggregator Members
 
-		public void OnPublishControl(NomadMessage message)
+		public void OnPublishControl(NomadDistributedMessage message)
 		{
 			Loggger.Debug(string.Format("Acquired message {0}", message));
 
@@ -161,6 +161,11 @@ namespace Nomad.Distributed.Communication
 			// try publishing message in the local system on this machine
 			_localEventAggregator.Publish(message);
 
+			// filter local NomadMessage
+			if (message is NomadMessage)
+			{
+				return;
+			}
 			// try publishing message in the remote system
 			SendToAll(message);
 		}
@@ -249,7 +254,7 @@ namespace Nomad.Distributed.Communication
 			{
 				try
 				{
-					dea.OnPublishControl(message as NomadMessage);
+					dea.OnPublishControl(message as NomadDistributedMessage);
 				}
 				catch (Exception e)
 				{

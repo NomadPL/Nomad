@@ -1,5 +1,4 @@
 ﻿using System.ServiceModel;
-using Nomad.Messages;
 using Nomad.Messages.Distributed;
 
 namespace Nomad.Distributed.Communication
@@ -13,7 +12,7 @@ namespace Nomad.Distributed.Communication
 		/// </summary>
 		/// <param name="message"></param>
 		[OperationContract]
-		void OnPublishControl(NomadMessage message);
+		void OnPublishControl(NomadDistributedMessage message);
 
 		/// <summary>
 		///		Invoked by other <see cref="DistributedEventAggregator"/> instances
