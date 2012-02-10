@@ -13,30 +13,24 @@ namespace DistributableListenerModule
 	{
 		private readonly IEventAggregator _eventAggregator;
 		private int _counter;
-		private FileInfo _fileInfo = new FileInfo(@"CounterFile");
 
 		public SimpleListeningModule(IEventAggregator eventAggregator)
 		{
 			_counter = 0;
 			_eventAggregator = eventAggregator;
-			_fileInfo.Delete();
 		}
 
 		public void OnLoad()
 		{
 			_eventAggregator.Subscribe<DistributableMessage>(CallBack);
+			Console.WriteLine("Listener subscribed to DistributableMessage");
 		}
 
 		private void CallBack(DistributableMessage obj)
 		{
 			++_counter;
-			Console.WriteLine("Listener got message with content: {0}",obj.Payload);
-			if (_counter >= 5)
-			{
-				StreamWriter text = _fileInfo.CreateText();
-				text.WriteLine(_counter);
-				text.Close();
-			}
+			Console.WriteLine("Listener got message with content: {0}", obj.Payload);
+			Console.WriteLine("Listener counter: {0}", _counter);
 		}
 
 		public void OnUnLoad()
