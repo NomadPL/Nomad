@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\..\..\Build\Examples\Tutorial_05_DEA\Client\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -48,14 +48,6 @@
     <ProjectReference Include="..\..\Nomad\Nomad.csproj">
       <Project>{3828EBBD-FFBA-4C30-BF46-D3742BC165F1}</Project>
       <Name>Nomad</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Controlling_Publisher_Module\Controlling_Publisher_Module.csproj">
-      <Project>{609956AE-F9B0-489C-AE90-EC9D6068055F}</Project>
-      <Name>Controlling_Publisher_Module</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\EventAggregatorCommunicationTypes\EventAggregatorCommunicationTypes.csproj">
-      <Project>{2B0A0CD6-FD57-48F0-A163-F39073981934}</Project>
-      <Name>EventAggregatorCommunicationTypes</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
