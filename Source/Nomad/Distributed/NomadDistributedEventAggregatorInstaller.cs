@@ -21,10 +21,10 @@ namespace Nomad.Distributed
 		{
 			container.Register(
 				Component.For<IGuiThreadProvider>().ImplementedBy<LazyWpfGuiThreadProvider>(),
-				Component.For<IEventAggregator>().ImplementedBy<EventAggregator>().Named(PURE_EA).LifeStyle.Singleton,
+				//Component.For<IEventAggregator>().ImplementedBy<EventAggregator>().Named(PURE_EA).LifeStyle.Singleton,
 				Component
 					.For<IEventAggregator>()
-					.UsingFactoryMethod(x => new DistributedEventAggregator(container.Resolve<IEventAggregator>()))
+					.UsingFactoryMethod(x => new DistributedEventAggregator(new EventAggregator(container.Resolve<IGuiThreadProvider>())))
 					.Named(ON_SITE_NAME)
 					.LifeStyle.Singleton
 				);
