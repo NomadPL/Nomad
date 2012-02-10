@@ -9,14 +9,12 @@ namespace Nomad.Messages
 	/// <remarks>
 	///     This class has to be serializable.
 	/// </remarks>
-	[DataContract]
 	[Serializable]
 	public abstract class NomadMessage
 	{
 		/// <summary>
 		///     Text message. About cause of the message.
 		/// </summary>
-		[DataMember]
 		public string Message { get; private set; }
 
 		/// <summary>
@@ -28,6 +26,10 @@ namespace Nomad.Messages
 			Message = message;
 		}
 
+		protected NomadMessage()
+		{
+			
+		}
 
 		/// <summary>
 		///     Inherited <see cref="object.ToString"/> method which every message has to implement.
