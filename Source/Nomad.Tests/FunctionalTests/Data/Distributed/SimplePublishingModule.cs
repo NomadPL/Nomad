@@ -17,11 +17,6 @@ public class SimplePublishingModule : Nomad.Modules.IModuleBootstraper
 
 	public void OnLoad()
 	{
-		_allModulesLoadedSubscriptionTicket = _aggregator.Subscribe<NomadAllModulesLoadedMessage>(StartPublishing);
-	}
-
-	private void StartPublishing(NomadAllModulesLoadedMessage obj)
-	{
 		for (int i = 0; i < 5; i++)
 		{
 			string payload = "Sample Message " + i;

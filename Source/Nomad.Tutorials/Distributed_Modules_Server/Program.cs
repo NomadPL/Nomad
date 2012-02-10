@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using Nomad.Core;
 using Nomad.Distributed;
+using Nomad.KeysGenerator;
 using Nomad.Modules.Discovery;
 
 namespace Distributed_Modules_Server
@@ -30,7 +31,6 @@ namespace Distributed_Modules_Server
 				new DirectoryModuleDiscovery(@"..\Modules\Listener", SearchOption.TopDirectoryOnly);
 			kernel.LoadModules(discovery);
 
-			var modules = kernel.GetLoadedModules();
 			Console.WriteLine("Listener kernel ready");
 			//wait for input
 			Console.ReadLine();
@@ -41,8 +41,15 @@ namespace Distributed_Modules_Server
 
 		private static void GenerateManifestUsingApi(string assemblyName, string path)
 		{
+			string keyFile = @"alaMaKota.xml";
+			if (File.Exists(keyFile))
+			{
+				File.Delete(keyFile);
+			}
+			KeysGeneratorProgram.Main(new[] { keyFile });
+
 			var builder = new Nomad.Utils.ManifestCreator.ManifestBuilder(@"TUTORIAL_ISSUER",
-																		  @"..\..\..\KEY_FILE.xml",
+																		  keyFile,
 																		  assemblyName,
 																		  path);
 			builder.CreateAndPublish();

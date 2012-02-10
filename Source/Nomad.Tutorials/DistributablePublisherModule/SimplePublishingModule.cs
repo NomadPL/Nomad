@@ -1,3 +1,4 @@
+using System;
 using DistributableMessagesLibrary;
 using Nomad.Communication.EventAggregation;
 using Nomad.Messages.Loading;
@@ -25,6 +26,7 @@ namespace DistributablePublisherModule
 
 		private void StartPublishing(NomadAllModulesLoadedMessage obj)
 		{
+			Console.WriteLine("All modules loading, now publishing.");
 			for (int i = 0; i < 5; i++)
 			{
 				string payload = "Sample Message " + i;
