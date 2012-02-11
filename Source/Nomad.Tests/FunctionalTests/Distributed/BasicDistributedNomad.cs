@@ -48,15 +48,12 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			config.DistributedConfiguration = DistributedConfiguration.Default;
 			config.DistributedConfiguration.LocalURI = new Uri(site1);
 			Assert.DoesNotThrow(() => _kernel1 = new NomadKernel(config));
-
+			
 			NomadConfiguration config2 = NomadConfiguration.Default;
 			config2.DistributedConfiguration = DistributedConfiguration.Default;
 			config2.DistributedConfiguration.LocalURI = new Uri(site2);
 			config2.DistributedConfiguration.URLs.Add(site1);
 			Assert.DoesNotThrow(() => _kernel2 = new NomadKernel(config2));
-
-			Assert.IsNotNull(_kernel1);
-			Assert.IsNotNull(_kernel2);
 
 			_kernel2.EventAggregator.Publish(new NomadSimpleMessage("Hello from kernel2"));
 
