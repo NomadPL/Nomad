@@ -125,14 +125,18 @@ namespace Nomad.Core
 
 		public void Dispose()
 		{
-			if (_repository != null)
-			{
-				_repository.Shutdown();
-			}
+			_logger.Debug("Disposing: " + typeof(NomadKernel));
 
 			if (_moduleLoaderCreator != null)
 			{
 				_moduleLoaderCreator.Dispose();
+			}
+
+
+			_logger.Debug("Shutting down logger repository");
+			if (_repository != null)
+			{
+				_repository.Shutdown();
 			}
 		}
 

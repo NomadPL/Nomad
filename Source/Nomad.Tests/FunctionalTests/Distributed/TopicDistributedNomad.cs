@@ -1,14 +1,15 @@
 using System;
 using System.IO;
-using System.Threading;
 using Nomad.Core;
 using Nomad.Distributed;
 using Nomad.KeysGenerator;
-using Nomad.Messages.Loading;
 using Nomad.Modules.Discovery;
+using Nomad.Tests.Data.Distributed.Topic;
 using Nomad.Tests.FunctionalTests.Fixtures;
+using Nomad.Utils.ManifestCreator;
 using NUnit.Framework;
 using TestsShared;
+using TestsShared.Utils;
 
 namespace Nomad.Tests.FunctionalTests.Distributed
 {
@@ -18,8 +19,11 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 	[FunctionalTests]
 	public class TopicDistributedNomad
 	{
+		private static readonly string SOURDE_DIR = @"..\Source\" +
+		                                            FileHelper.GetNamespaceSourceFolder(typeof (DistributableMessage));
+
 		private readonly ModuleCompiler _compiler = new ModuleCompiler();
-		private const string SOURDE_DIR = @"..\Source\Nomad.Tests\FunctionalTests\Data\Distributed";
+
 		private NomadKernel _listenerKernel;
 		private NomadKernel _publisherKernel;
 
@@ -39,7 +43,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 
 		private static String GetSourceCodePath(String codeLocation)
 		{
-			var dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SOURDE_DIR);
+			string dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SOURDE_DIR);
 			return Path.Combine(dirPath, codeLocation);
 		}
 
@@ -72,20 +76,20 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			_compiler.OutputDirectory = listenerPath;
 			File.Copy(sharedPath + "DistributableMessage.dll", Path.Combine(listenerPath, "DistributableMessage.dll"), true);
 			_compiler.GenerateModuleFromCode(listenerModuleSourcePath, sharedPath + "DistributableMessage.dll");
-			var builder = new Nomad.Utils.ManifestCreator.ManifestBuilder(@"TEST_ISSUER",
-			                                                              keyFile,
-			                                                              @"SimpleListeningModule.dll",
-			                                                              listenerPath);
+			var builder = new ManifestBuilder(@"TEST_ISSUER",
+			                                  keyFile,
+			                                  @"SimpleListeningModule.dll",
+			                                  listenerPath);
 			builder.CreateAndPublish();
 
 			// publisher module generation
 			_compiler.OutputDirectory = publisherPath;
 			File.Copy(sharedPath + "DistributableMessage.dll", Path.Combine(publisherPath, "DistributableMessage.dll"), true);
 			_compiler.GenerateModuleFromCode(publisherModuleSourcePath, sharedPath + "DistributableMessage.dll");
-			builder = new Nomad.Utils.ManifestCreator.ManifestBuilder(@"TEST_ISSUER",
-			                                                          keyFile,
-			                                                          @"SimplePublishingModule.dll",
-			                                                          publisherPath);
+			builder = new ManifestBuilder(@"TEST_ISSUER",
+			                              keyFile,
+			                              @"SimplePublishingModule.dll",
+			                              publisherPath);
 			builder.CreateAndPublish();
 
 			if (File.Exists(keyFile))
@@ -101,7 +105,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			_listenerKernel = new NomadKernel(config);
 			var listenerDiscovery = new DirectoryModuleDiscovery(listenerPath, SearchOption.TopDirectoryOnly);
 			_listenerKernel.LoadModules(listenerDiscovery);
-		
+
 			// creating publisher module kernel
 			string site2 = "net.tcp://127.0.0.1:6666/IDEA";
 			NomadConfiguration config2 = NomadConfiguration.Default;

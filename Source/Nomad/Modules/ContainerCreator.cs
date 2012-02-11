@@ -77,14 +77,22 @@ namespace Nomad.Modules
 
 		public void Dispose()
 		{
+			_logger.Debug("Disposing: " + typeof(ContainerCreator));
+
+			if (_distributedEventAggregatorServiceHost != null)
+			{
+				_distributedEventAggregatorServiceHost.Close();
+			}
+
 			if (_resolver != null)
 			{
 				_resolver.Dispose();
 			}
 
-			if (_distributedEventAggregatorServiceHost != null)
+			_logger.Debug("Shutting down logger repository");
+			if (_repository != null)
 			{
-				_distributedEventAggregatorServiceHost.Close();
+				_repository.Shutdown();
 			}
 		}
 

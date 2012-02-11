@@ -195,6 +195,10 @@
       <Project>{EF5A9D12-B2C4-46E0-B7E9-75868819C4C8}</Project>
       <Name>Nomad.ManifestCreator</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Nomad.Tests.Data\Nomad.Tests.Data.csproj">
+      <Project>{B61B1C2E-3FDD-4C28-BE4C-708DB5432C9B}</Project>
+      <Name>Nomad.Tests.Data</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Nomad\Nomad.csproj">
       <Project>{3828EBBD-FFBA-4C30-BF46-D3742BC165F1}</Project>
       <Name>Nomad</Name>

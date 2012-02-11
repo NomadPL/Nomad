@@ -70,7 +70,7 @@ namespace Nomad.Distributed.Communication
 		/// </summary>
 		public IList<IDistributedEventAggregator> RemoteDistributedEventAggregator
 		{
-			set { _deas = value; }
+			set { _deas = new List<IDistributedEventAggregator>(value); }
 			get { return _deas; }
 		}
 
@@ -78,9 +78,17 @@ namespace Nomad.Distributed.Communication
 
 		public void Dispose()
 		{
-			// onDispose method or sending Dispose message through communication normal services
-			var msg = new NomadDetachingMessage("Sample Dispatching Message");
-			SendToAllControl(msg);
+			try
+			{
+				// onDispose method or sending Dispose message through communication normal services
+				var msg = new NomadDetachingMessage("Sample Dispatching Message");
+				SendToAllControl(msg);
+			}
+			catch (Exception e)
+			{
+				// NOTE: the exception must be eaten -> the cleanup show must go on
+				Loggger.Error("There was serious error during the cleanup phase",e);
+			}
 		}
 
 		#endregion
