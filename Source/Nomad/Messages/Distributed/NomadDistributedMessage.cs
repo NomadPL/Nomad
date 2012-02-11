@@ -7,9 +7,14 @@ namespace Nomad.Messages.Distributed
 	///     Abstract class that defines the message passed between distributed kernels.
 	/// </summary>
 	/// <remarks>
-	///     This class has to be serializable.
+	///     <para>This class has to be serializable.</para>
+	/// <para>
+	///  All the sepcialization of the <see cref="NomadDetachingMessage"/>
+	/// need to be specified using the <see cref="KnownTypeAttribute"/>.
+	/// </para>
 	/// </remarks>
 	[Serializable]
+	[KnownType(typeof (NomadDetachingMessage))]
 	public abstract class NomadDistributedMessage
 	{
 		/// <summary>
@@ -26,6 +31,14 @@ namespace Nomad.Messages.Distributed
 			Message = message;
 		}
 
+		/// <summary>
+		///     Protected constructor used only for inheritance lineage. No <see cref="Message"/>
+		/// will be set.
+		/// </summary>
+		protected NomadDistributedMessage(): this(string.Empty)
+		{
+			
+		}
 
 		/// <summary>
 		///     Inherited <see cref="object.ToString"/> method which every message has to implement.

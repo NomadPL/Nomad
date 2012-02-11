@@ -34,6 +34,7 @@ namespace Nomad.Modules
 
 		private ILog _logger;
 		private ILoggerRepository _repository;
+		private IResolver _resolver;
 
 
 		/// <summary>
@@ -44,7 +45,7 @@ namespace Nomad.Modules
 		/// </remarks>
 		public ContainerCreator()
 		{
-			_windsorContainer = new WindsorContainer();			
+			_windsorContainer = new WindsorContainer();
 		}
 
 
@@ -76,6 +77,11 @@ namespace Nomad.Modules
 
 		public void Dispose()
 		{
+			if (_resolver != null)
+			{
+				_resolver.Dispose();
+			}
+
 			if (_distributedEventAggregatorServiceHost != null)
 			{
 				_distributedEventAggregatorServiceHost.Close();
@@ -137,8 +143,9 @@ namespace Nomad.Modules
 				var dea =
 					(DistributedEventAggregator)
 					_windsorContainer.Resolve<IEventAggregator>(NomadDistributedEventAggregatorInstaller.ON_SITE_NAME);
-				var resolver = new ResolverFactory(distributedConfiguration);
-				dea.RemoteDistributedEventAggregator = resolver.Resolve();
+
+				_resolver = new ResolverFactory(distributedConfiguration);
+				dea.RemoteDistributedEventAggregator = _resolver.Resolve();
 
 				// run service
 				RegisterServiceHostDEA(distributedConfiguration);

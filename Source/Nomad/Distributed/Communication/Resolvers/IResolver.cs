@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace Nomad.Distributed.Communication.Resolvers
@@ -6,7 +7,7 @@ namespace Nomad.Distributed.Communication.Resolvers
 	///		Resolves the already existing <see cref="DistributedEventAggregator"/> instances on system using 
 	/// specified mode.
 	/// </summary>
-	public interface IResolver
+	public interface IResolver : IDisposable
 	{
 		IList<IDistributedEventAggregator> Resolve();
 	}

@@ -40,5 +40,10 @@ namespace Nomad.Distributed.Communication.Resolvers
 					throw new InvalidOperationException("The provided mode was not found");
 			}
 		}
+
+		public void Dispose()
+		{
+			_simpleResolver.Dispose();
+		}
 	}
 }
