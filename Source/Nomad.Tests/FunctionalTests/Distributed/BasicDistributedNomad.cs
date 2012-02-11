@@ -1,7 +1,6 @@
 ﻿using System;
 using Nomad.Core;
 using Nomad.Distributed;
-using Nomad.Messages.Distributed;
 using NUnit.Framework;
 using TestsShared;
 
@@ -12,31 +11,14 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 	/// level. Simple beacause no compilaton at runtime is done.
 	/// </summary>
 	[FunctionalTests]
-	internal class BasicDistributedNomad
+	internal class BasicDistributedNomad : DistributedNomadBase
 	{
-		private NomadKernel _kernel1;
-		private NomadKernel _kernel2;
-
-		[TearDown]
-		public void tear_down()
-		{
-			if (_kernel1 != null)
-			{
-				_kernel1.Dispose();
-			}
-
-			if (_kernel2 != null)
-			{
-				_kernel2.Dispose();
-			}
-		}
-
 		[Test]
 		public void default_distributed_configuration_passes()
 		{
 			NomadConfiguration config = NomadConfiguration.Default;
 			config.DistributedConfiguration = DistributedConfiguration.Default;
-			Assert.DoesNotThrow(() => _kernel1 = new NomadKernel(config));
+			Assert.DoesNotThrow(() => ListenerKernel = new NomadKernel(config));
 		}
 
 		[Test]
@@ -47,17 +29,17 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			NomadConfiguration config = NomadConfiguration.Default;
 			config.DistributedConfiguration = DistributedConfiguration.Default;
 			config.DistributedConfiguration.LocalURI = new Uri(site1);
-			Assert.DoesNotThrow(() => _kernel1 = new NomadKernel(config));
-			
+			Assert.DoesNotThrow(() => ListenerKernel = new NomadKernel(config));
+
 			NomadConfiguration config2 = NomadConfiguration.Default;
 			config2.DistributedConfiguration = DistributedConfiguration.Default;
 			config2.DistributedConfiguration.LocalURI = new Uri(site2);
 			config2.DistributedConfiguration.URLs.Add(site1);
-			Assert.DoesNotThrow(() => _kernel2 = new NomadKernel(config2));
+			Assert.DoesNotThrow(() => PublisherKernel = new NomadKernel(config2));
 
-			_kernel2.EventAggregator.Publish(new NomadSimpleMessage("Hello from kernel2"));
+			PublisherKernel.EventAggregator.Publish(new NomadSimpleMessage("Hello from kernel2"));
 
-			Assert.DoesNotThrow( () => _kernel2.Dispose());
+			Assert.DoesNotThrow(() => PublisherKernel.Dispose());
 		}
 	}
 }

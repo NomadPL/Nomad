@@ -109,7 +109,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FunctionalTests\Distributed\BasicDistributedNomad.cs" />
+    <Compile Include="FunctionalTests\Distributed\DistributedNomadBase.cs" />
     <Compile Include="FunctionalTests\Distributed\NomadSimpleMessage.cs" />
+    <Compile Include="FunctionalTests\Distributed\SingleDeliveryDistributedNomad.cs" />
     <Compile Include="FunctionalTests\Distributed\TopicDistributedNomad.cs" />
     <Compile Include="FunctionalTests\EventAggregation\EventAggregationGuiThreadChangesSupport.cs" />
     <Compile Include="FunctionalTests\EventAggregation\EventAggregatorFacade.cs" />
