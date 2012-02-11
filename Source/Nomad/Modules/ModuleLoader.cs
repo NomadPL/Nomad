@@ -15,10 +15,11 @@ namespace Nomad.Modules
 	/// </summary>
 	public class ModuleLoader : MarshalByRefObject, IModuleLoader
 	{
+		private readonly Dictionary<string, Assembly> _assemblies;
+		private readonly IGuiThreadProvider _guiThreadProvider;
 		private readonly List<ModuleInfo> _loadedModuleInfos = new List<ModuleInfo>();
 		private readonly List<IModuleBootstraper> _loadedModules = new List<IModuleBootstraper>();
 		private readonly IWindsorContainer _rootContainer;
-		private readonly IGuiThreadProvider _guiThreadProvider;
 
 
 		/// <summary>
@@ -35,6 +36,10 @@ namespace Nomad.Modules
 
 			_rootContainer = rootContainer;
 			_guiThreadProvider = guiThreadProvider;
+
+			_assemblies = new Dictionary<string, Assembly>();
+			AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoad;
+			AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
 		}
 
 		#region IModuleLoader Members
@@ -42,58 +47,11 @@ namespace Nomad.Modules
 		/// <summary>Inherited</summary>
 		public void LoadModule(ModuleInfo moduleInfo)
 		{
-			var assembly = LoadAssembly(moduleInfo);
-			var bootstraper = CreateBootstraper(assembly);
+			Assembly assembly = LoadAssembly(moduleInfo);
+			IModuleBootstraper bootstraper = CreateBootstraper(assembly);
 			ExecuteOnLoad(bootstraper);
 			RegisterModule(moduleInfo, bootstraper);
 		}
-
-		private Assembly LoadAssembly(ModuleInfo moduleInfo)
-		{
-			var asmName = AssemblyName.GetAssemblyName(moduleInfo.AssemblyPath);
-			var loadedAsembly = Assembly.Load(asmName);
-
-			var folderPath = Path.GetDirectoryName(moduleInfo.AssemblyPath);
-			AppDomain.CurrentDomain.AppendPrivatePath(folderPath);
-
-			// perform full blown loading of all of the references types
-			// to provide search pathing (onlye one level of such things is done)
-
-			foreach (var asm in loadedAsembly.GetReferencedAssemblies())
-			{
-				AppDomain.CurrentDomain.Load(asm);
-			}
-
-			return loadedAsembly;
-		}
-
-		private IModuleBootstraper CreateBootstraper(Assembly assembly)
-		{
-			var bootstraperType = GetBootstrapperType(assembly);
-			var subContainer = CreateSubContainerConfiguredFor(bootstraperType);
-			return subContainer.Resolve<IModuleBootstraper>();
-		}
-
-		private void ExecuteOnLoad(IModuleBootstraper bootstraper)
-		{
-			using (var waitHandle = new AutoResetEvent(false))
-			{
-				Action @delegate = () =>
-									   {
-										   bootstraper.OnLoad();
-										   waitHandle.Set();
-									   };
-				_guiThreadProvider.RunInGui(@delegate);
-				waitHandle.WaitOne();
-			}
-		}
-
-		private void RegisterModule(ModuleInfo moduleInfo, IModuleBootstraper bootstraper)
-		{
-			_loadedModules.Add(bootstraper);
-			_loadedModuleInfos.Add(moduleInfo);
-		}
-
 
 		/// <summary>
 		///     Tries to invoke <see cref="IModuleBootstraper.OnUnLoad"/>  method on each module bootstrapper from set.
@@ -103,7 +61,7 @@ namespace Nomad.Modules
 		/// </remarks>
 		public void InvokeUnload()
 		{
-			foreach (var moduleBootstraper in _loadedModules)
+			foreach (IModuleBootstraper moduleBootstraper in _loadedModules)
 			{
 				moduleBootstraper.OnUnLoad();
 			}
@@ -120,6 +78,59 @@ namespace Nomad.Modules
 		}
 
 		#endregion
+
+		private Assembly OnAssemblyResolve(object sender, ResolveEventArgs args)
+		{
+			Assembly assembly = null;
+			_assemblies.TryGetValue(args.Name, out assembly);
+			return assembly;
+		}
+
+		private void OnAssemblyLoad(object sender, AssemblyLoadEventArgs args)
+		{
+			Assembly assembly = args.LoadedAssembly;
+			_assemblies[assembly.FullName] = assembly;
+		}
+
+		private Assembly LoadAssembly(ModuleInfo moduleInfo)
+		{
+			AssemblyName asmName = AssemblyName.GetAssemblyName(moduleInfo.AssemblyPath);
+			Assembly loadedAsembly = Assembly.Load(asmName);
+
+			string folderPath = Path.GetDirectoryName(moduleInfo.AssemblyPath);
+			AppDomain.CurrentDomain.AppendPrivatePath(folderPath);
+
+			return loadedAsembly;
+		}
+
+
+		private IModuleBootstraper CreateBootstraper(Assembly assembly)
+		{
+			Type bootstraperType = GetBootstrapperType(assembly);
+			IWindsorContainer subContainer = CreateSubContainerConfiguredFor(bootstraperType);
+			return subContainer.Resolve<IModuleBootstraper>();
+		}
+
+		private void ExecuteOnLoad(IModuleBootstraper bootstraper)
+		{
+			using (var waitHandle = new AutoResetEvent(false))
+			{
+				Action @delegate = () =>
+				                   	{
+				                   		bootstraper.OnLoad();
+				                   		waitHandle.Set();
+				                   	};
+				_guiThreadProvider.RunInGui(@delegate);
+				waitHandle.WaitOne();
+			}
+		}
+
+		private void RegisterModule(ModuleInfo moduleInfo, IModuleBootstraper bootstraper)
+		{
+			_loadedModules.Add(bootstraper);
+			_loadedModuleInfos.Add(moduleInfo);
+		}
+
 
 		private static Type GetBootstrapperType(Assembly assembly)
 		{
