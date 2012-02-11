@@ -1,5 +1,3 @@
-using System;
-
 namespace Nomad.Messages.Distributed
 {
     /// <summary>
@@ -14,7 +12,7 @@ namespace Nomad.Messages.Distributed
 
         public override string ToString()
         {
-            return "Distributed Deteached Message";
+            return "Distributed Detaching Message";
         }
     }
 }

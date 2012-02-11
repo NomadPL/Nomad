@@ -28,7 +28,7 @@ namespace Nomad.Distributed.Communication
 		private static readonly ILog Loggger = LogManager.GetLogger(NomadConstants.NOMAD_LOGGER_REPOSITORY,
 			typeof (DistributedEventAggregator));
 
-		private static IEventAggregator localEventAggregator;
+		private static IEventAggregator _localEventAggregator;
 
 
 		private static readonly object LockObject = new object();
@@ -52,15 +52,15 @@ namespace Nomad.Distributed.Communication
 
 		private static IEventAggregator LocalEventAggregator
 		{
-			get { return localEventAggregator; }
+			get { return _localEventAggregator; }
 			set
 			{
 				lock (LockObject)
 				{
-					if (localEventAggregator != null)
+					if (_localEventAggregator != null)
 						throw new InvalidOperationException("The local event aggregator can be set only once");
 
-					localEventAggregator = value;
+					_localEventAggregator = value;
 				}
 			}
 		}
@@ -78,7 +78,7 @@ namespace Nomad.Distributed.Communication
 
 		public void Dispose()
 		{
-			// onDispose method or sending Dispos message throu communication normal services
+			// onDispose method or sending Dispose message through communication normal services
 			var msg = new NomadDetachingMessage("Sample Dispatching Message");
 			SendToAllControl(msg);
 		}
@@ -153,7 +153,7 @@ namespace Nomad.Distributed.Communication
 		public IEventAggregatorTicket<T> Subscribe<T>(Action<T> action, DeliveryMethod deliveryMethod) where T : class
 		{
 			// subscribe on local event
-			return localEventAggregator.Subscribe(action, deliveryMethod);
+			return _localEventAggregator.Subscribe(action, deliveryMethod);
 
 			// subscribe on remote or not by now
 		}
@@ -161,7 +161,7 @@ namespace Nomad.Distributed.Communication
 		public void Publish<T>(T message) where T : class
 		{
 			// try publishing message in the local system on this machine
-			localEventAggregator.Publish(message);
+			_localEventAggregator.Publish(message);
 
 			// filter local NomadMessage
 			if (message is NomadMessage)
