@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Nomad.Core;
 using Nomad.Distributed;
-using Nomad.KeysGenerator;
 using Nomad.Modules.Discovery;
 using Nomad.Tests.Data.Distributed.Topic;
 using Nomad.Utils.ManifestCreator;
@@ -37,19 +36,12 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			Compiler.GenerateModuleFromCode(sharedModuleSourcePath);
 
 
-			string keyFile = @"alaMaKota.xml";
-			if (File.Exists(keyFile))
-			{
-				File.Delete(keyFile);
-			}
-			KeysGeneratorProgram.Main(new[] {keyFile});
-
 			// listener module generation
 			Compiler.OutputDirectory = listenerPath;
 			File.Copy(sharedPath + "DistributableMessage.dll", Path.Combine(listenerPath, "DistributableMessage.dll"), true);
 			Compiler.GenerateModuleFromCode(listenerModuleSourcePath, sharedPath + "DistributableMessage.dll");
 			var builder = new ManifestBuilder(@"TEST_ISSUER",
-			                                  keyFile,
+											  KeyFile,
 			                                  @"SimpleListeningModule.dll",
 			                                  listenerPath);
 			builder.CreateAndPublish();
@@ -59,15 +51,10 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			File.Copy(sharedPath + "DistributableMessage.dll", Path.Combine(publisherPath, "DistributableMessage.dll"), true);
 			Compiler.GenerateModuleFromCode(publisherModuleSourcePath, sharedPath + "DistributableMessage.dll");
 			builder = new ManifestBuilder(@"TEST_ISSUER",
-			                              keyFile,
+			                              KeyFile,
 			                              @"SimplePublishingModule.dll",
 			                              publisherPath);
 			builder.CreateAndPublish();
-
-			if (File.Exists(keyFile))
-			{
-				File.Delete(keyFile);
-			}
 
 			// creating listener module kernel
 			string site1 = "net.tcp://127.0.0.1:5555/IDEA";

@@ -48,7 +48,7 @@ namespace TestsShared.Utils
 			// from type name remove the possible asssembly name which can have '.'
 			string asmName = type.Assembly.GetName().Name;
 			ns = ns.Replace(asmName, KEY);
-			string nsPath = ns.Replace('.', '/');
+			string nsPath = ns.Replace('.', '\\');
 			nsPath = nsPath.Replace(KEY, asmName);
 			return nsPath;
 		}
