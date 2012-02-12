@@ -15,7 +15,8 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 	///     Generates the module assembly from source files.
 	/// </summary>
 	/// <remarks>
-	///     Puts the additional Nomad dependency.
+	///     Puts the additional Nomad dependency nad Nomad.Tests dependency alsow.
+	/// TODO: make the <see cref="ModuleCompiler"/> more configurable class.
 	/// </remarks>
 	public class ModuleCompiler
 	{
@@ -80,6 +81,9 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 			get { return @"..\Source\Nomad.Tests\FunctionalTests\Data\SimplestModulePossible2.cs"; }
 		}
 
+		/// <summary>
+		///     Gets the alternative, alternative path. Thus SimplestModulePossible3
+		/// </summary>
 		public static string DefaultSimpleModuleSourceLastAlternative
 		{
 			get { return @"..\Source\Nomad.Tests\FunctionalTests\Data\SimplestModulePossible3.cs"; }
@@ -88,6 +92,10 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 		/// <summary>
 		///     Generates the module from <paramref name="sourceFilePath"/> with the additional assemblies presented in <paramref name="dependeciesAssembliesPath"/>.
 		/// </summary>
+		/// <remarks>
+		///		When no <see cref="OutputName"/> is provided then the name of the source file with the <c>.dll</c> ending is used. When name <c>is provided</c>
+		/// the <see cref="OutputDirectory"/> property <c>xwill not be used</c>.
+		/// </remarks>
 		/// <param name="sourceFilePath">source file </param>
 		/// <param name="dependeciesAssembliesPath">Array of the dependecies (assemblies) to be the following assembly dependent on.</param>
 		/// <returns>The path to the compiled assembly.</returns>
@@ -147,23 +155,39 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 			return modulePath + ModuleManifest.ManifestFileNameSuffix;
 		}
 
+		/// <summary>
+		///		Generate manifest for module.
+		/// </summary>
 		public string GenerateManifestForModule(string modulePath,string keyLocation)
 		{
 			return GenerateManifestForModule(modulePath, keyLocation, ManifestBuilderConfiguration.Default);
 		}
 
-
-		public void SetUpModuleWithManifest(string outputDirectory, string srcPath,
+		/// <summary>
+		///		Wrapps up the generating manifest. Uses <see cref="WholeDirectoryModulesDependenciesProvider"/> with
+		/// the <see cref="ManifestBuilderConfiguration"/> file.
+		/// </summary>
+		public string  SetUpModuleWithManifest(string outputDirectory, string srcPath,
 											   params string[] references)
 		{
 			// NOTE: we are using whole directory module discovery instead of file one
 			var configuration = ManifestBuilderConfiguration.Default;
 			configuration.ModulesDependenciesProvider = new WholeDirectoryModulesDependenciesProvider();
 
-			SetUpModuleWithManifest(outputDirectory, srcPath, configuration, references);
+			return SetUpModuleWithManifest(outputDirectory, srcPath, configuration, references);
 		}
 
-		public void SetUpModuleWithManifest(string outputDirectory, string srcPath, ManifestBuilderConfiguration configuration,
+		/// <summary>
+		///		Generates the manifest for the file with coping all the dependencies and then removing them
+		/// </summary>
+		/// <remarks>
+		///		This method will be problematic with duplcate names and so on...
+		/// </remarks>
+		/// <param name="references">Path to all references</param>
+		///<returns>
+		///		The path to the generated manifest
+		/// </returns>
+		public string SetUpModuleWithManifest(string outputDirectory, string srcPath, ManifestBuilderConfiguration configuration,
 											   params string[] references)
 		{
 			OutputDirectory = outputDirectory;
@@ -184,7 +208,7 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 			KeysGeneratorProgram.Main(new[] { KeyFile });
 
 			// manifest generating is for folder
-			GenerateManifestForModule(modulePath, KeyFile, configuration);
+			var file = GenerateManifestForModule(modulePath, KeyFile, configuration);
 
 			if (File.Exists(KeyFile))
 			{
@@ -196,6 +220,8 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 			{
 				File.Delete(Path.Combine(outputDirectory, Path.GetFileName(reference)));
 			}
+
+			return file;
 		}
 	}
 }

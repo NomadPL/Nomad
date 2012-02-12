@@ -194,6 +194,8 @@
     <Compile Include="Updater\UpdaterStatus.cs" />
     <Compile Include="Updater\UpdaterType.cs" />
     <Compile Include="Utils\LoggingHelper.cs" />
+    <Compile Include="Utils\ManifestCreator\DependenciesProvider\CompositeModulesDependencyProvider.cs" />
+    <Compile Include="Utils\ManifestCreator\DependenciesProvider\SingleModulesDependencyProvider.cs" />
     <Compile Include="Utils\ManifestCreator\FileSignerProviders\ISignedFilesProvider.cs" />
     <Compile Include="Utils\ManifestCreator\DependenciesProvider\IModulesDependenciesProvider.cs" />
     <Compile Include="Utils\ManifestCreator\DependenciesProvider\FromFileModulesDependencyProvider.cs" />

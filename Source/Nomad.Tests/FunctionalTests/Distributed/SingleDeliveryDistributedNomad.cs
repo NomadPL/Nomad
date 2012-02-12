@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using Nomad.Tests.Data.Distributed.SingleDelivery;
+using Nomad.Utils.ManifestCreator;
+using Nomad.Utils.ManifestCreator.DependenciesProvider;
 using NUnit.Framework;
 using TestsShared;
 
@@ -31,7 +33,9 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			Compiler.GenerateManifestForModule(sharedDll, KeyFile);
 
 			string publisherDll = Compiler.GenerateModuleFromCode(publishingModuleSrc, sharedDll);
-			Compiler.GenerateManifestForModule(publisherDll, KeyFile);
+			var manifestConfiguration = ManifestBuilderConfiguration.Default;
+			manifestConfiguration.ModulesDependenciesProvider = new SingleModulesDependencyProvider(sharedDll);
+			Compiler.GenerateManifestForModule(publisherDll, KeyFile, manifestConfiguration);
 
 			string listener1 = GenerateListener(runtimePath, sharedDll, listeningModuleSrc, 1);
 			string listneer2 = GenerateListener(runtimePath, sharedDll, listeningModuleSrc, 2);
@@ -50,7 +54,9 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		{
 			Compiler.OutputName = Path.Combine(runtimePath, "listener" + counter + ".dll");
 			string listenerDll = Compiler.GenerateModuleFromCode(listeningModuleSrc, sharedDll);
-			Compiler.GenerateManifestForModule(listenerDll, KeyFile);
+			ManifestBuilderConfiguration manifestConfiguration = ManifestBuilderConfiguration.Default;
+			manifestConfiguration.ModulesDependenciesProvider = new SingleModulesDependencyProvider(sharedDll);
+			Compiler.GenerateManifestForModule(listenerDll, KeyFile,manifestConfiguration);
 
 			return listenerDll;
 		}
