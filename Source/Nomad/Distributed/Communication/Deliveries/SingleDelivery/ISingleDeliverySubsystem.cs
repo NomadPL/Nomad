@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Nomad.Communication.EventAggregation;
 
@@ -16,7 +17,18 @@ namespace Nomad.Distributed.Communication.Deliveries.SingleDelivery
 		///		Sends the message as the typical single delivery.
 		/// </summary>
 		/// <param name="eventAggregators"></param>
+		///<param name="messageContent"></param>
+		///<param name="descriptor"></param>
+		///<returns></returns>
+		bool SentSingle(IEnumerable<IDistributedEventAggregator> eventAggregators, byte[] messageContent, TypeDescriptor descriptor);
+
+		/// <summary>
+		///		Revieves the message as does something with it.
+		/// </summary>
+		/// <param name="eventAggregator"></param>
+		/// <param name="sendObject"></param>
+		/// <param name="type"></param>
 		/// <returns></returns>
-		bool SentSingle(IEnumerable<IDistributedEventAggregator> eventAggregators);
+		bool RecieveSingle(IEventAggregator eventAggregator, object sendObject, Type type);
 	}
 }

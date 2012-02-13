@@ -1,8 +1,11 @@
 ﻿namespace Nomad.Communication.EventAggregation
 {
 	/// <summary>
-	/// Determines the semantic of <see cref="IEventAggregator.Publish{T}(T)"/> method.
+	///		Determines the semantic of <see cref="IEventAggregator.Publish{T}(T)"/> method.
 	/// </summary>
+	/// <remarks>
+	///		During local versions of such deliveries there is no distinction about those semantics.
+	/// </remarks>
 	public enum SingleDeliverySemantic
 	{
 		/// <summary>

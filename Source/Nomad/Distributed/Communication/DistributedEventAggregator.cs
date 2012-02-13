@@ -5,6 +5,7 @@ using System.ServiceModel;
 using log4net;
 using Nomad.Communication.EventAggregation;
 using Nomad.Core;
+using Nomad.Distributed.Communication.Deliveries.SingleDelivery;
 using Nomad.Distributed.Communication.Deliveries.TopicDelivery;
 using Nomad.Distributed.Communication.Utils;
 using Nomad.Distributed.Installers;
@@ -29,10 +30,13 @@ namespace Nomad.Distributed.Communication
 		private static readonly ILog logger = LogManager.GetLogger(NomadConstants.NOMAD_LOGGER_REPOSITORY,
 		                                                           typeof (DistributedEventAggregator));
 
-		private static IEventAggregator _localEventAggregator;
+		private static IEventAggregator localEventAggregator;
+		private static ISingleDeliverySubsystem singleDeliverySubsystem;
 
 
 		private static readonly object LockObject = new object();
+
+		private readonly ISingleDeliverySubsystem _singleDelivery;
 		private readonly ITopicDeliverySubsystem _topicDelivery;
 
 		private IList<IDistributedEventAggregator> _deas;
@@ -49,24 +53,44 @@ namespace Nomad.Distributed.Communication
 		///		This constructor is used by container during initalization. Used by <see cref="NomadDistributedEventAggregatorInstaller"/>
 		/// </summary>
 		/// <param name="localEventAggrgator">The local event aggregator used by </param>
-		///<param name="topicDelivery">The subsystem responsible for topic deliveries</param>
-		public DistributedEventAggregator(IEventAggregator localEventAggrgator, ITopicDeliverySubsystem topicDelivery)
+		///<param name="topicDelivery">The subsystem responsible for topic deliveries if <see cref="IEventAggregator"/></param>
+		///<param name="singleDelivery">The subsystem used for single delivery method of <see cref="IEventAggregator"/></param>
+		public DistributedEventAggregator(IEventAggregator localEventAggrgator, ITopicDeliverySubsystem topicDelivery,
+		                                  ISingleDeliverySubsystem singleDelivery)
 		{
 			_topicDelivery = topicDelivery;
+			_singleDelivery = singleDelivery;
 			LocalEventAggregator = localEventAggrgator;
 		}
 
-		private static IEventAggregator LocalEventAggregator
+		private static ISingleDeliverySubsystem SingleDeliverySubsystem
 		{
-			get { return _localEventAggregator; }
+			get { return singleDeliverySubsystem; }
 			set
 			{
 				lock (LockObject)
 				{
-					if (_localEventAggregator != null)
+					if (singleDeliverySubsystem != null)
+					{
+						throw new InvalidOperationException("The single devliery subsystem can be set only once");
+					}
+
+					singleDeliverySubsystem = value;
+				}
+			}
+		}
+
+		private static IEventAggregator LocalEventAggregator
+		{
+			get { return localEventAggregator; }
+			set
+			{
+				lock (LockObject)
+				{
+					if (localEventAggregator != null)
 						throw new InvalidOperationException("The local event aggregator can be set only once");
 
-					_localEventAggregator = value;
+					localEventAggregator = value;
 				}
 			}
 		}
@@ -141,7 +165,23 @@ namespace Nomad.Distributed.Communication
 
 		public bool OnPublishSingleDelivery(byte[] byteStream, TypeDescriptor typeDescriptor)
 		{
-			throw new NotImplementedException();
+			logger.Debug(string.Format("Acquired single delivery message of type {0}", typeDescriptor));
+			
+			// try recreating this type 
+			object sendObject;
+			Type type;
+			try
+			{
+				UnPackData(typeDescriptor, byteStream, out sendObject, out type);
+			}
+			catch (Exception e)
+			{
+				logger.Warn("The type not be recreated", e);
+				return false;
+			}
+
+			var deliveryStatus = SingleDeliverySubsystem.RecieveSingle(LocalEventAggregator, sendObject, type);
+			return deliveryStatus;
 		}
 
 		public void OnPublishTimelyBufferedDelivery(byte[] byteStream, TypeDescriptor typeDescriptor, DateTime voidTime)
@@ -220,7 +260,7 @@ namespace Nomad.Distributed.Communication
 		public IEventAggregatorTicket<T> Subscribe<T>(Action<T> action, DeliveryMethod deliveryMethod) where T : class
 		{
 			// subscribe on local event
-			return _localEventAggregator.Subscribe(action, deliveryMethod);
+			return localEventAggregator.Subscribe(action, deliveryMethod);
 
 			// subscribe on remote or not by now
 		}
@@ -228,7 +268,7 @@ namespace Nomad.Distributed.Communication
 		public bool Publish<T>(T message) where T : class
 		{
 			// try publishing message in the local system on this machine
-			bool delivered = _localEventAggregator.Publish(message);
+			bool delivered = localEventAggregator.Publish(message);
 
 			// prepare for publishing remotely
 			byte[] bytes;
@@ -256,7 +296,7 @@ namespace Nomad.Distributed.Communication
 		public void PublishTimelyBuffered<T>(T message, DateTime validUntil) where T : class
 		{
 			// try publishing message in the local system on this machine
-			_localEventAggregator.PublishTimelyBuffered(message, validUntil);
+			localEventAggregator.PublishTimelyBuffered(message, validUntil);
 
 			// prepare for publishing remotely
 			byte[] bytes;
@@ -295,7 +335,26 @@ namespace Nomad.Distributed.Communication
 
 		public bool PublishSingleDelivery<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class
 		{
-			throw new NotImplementedException();
+			bool localDelivery = localEventAggregator.PublishSingleDelivery(message, singleDeliverySemantic);
+			if (localDelivery)
+				return true;
+
+			// prepare for publishing remotely
+			byte[] bytes;
+			TypeDescriptor descriptor;
+			try
+			{
+				PackData(message, out bytes, out descriptor);
+			}
+			catch (Exception e)
+			{
+				// we return false because the delivery is not possible at all in any semantics
+				logger.Warn("Could not preapre message for sending", e);
+				return false;
+			}
+
+			bool remoteDelivery = _singleDelivery.SentSingle(RemoteDistributedEventAggregator, bytes, descriptor);
+			return remoteDelivery;
 		}
 
 		#endregion

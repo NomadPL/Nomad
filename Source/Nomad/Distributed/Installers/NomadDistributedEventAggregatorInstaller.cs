@@ -4,6 +4,7 @@ using Castle.MicroKernel.SubSystems.Configuration;
 using Castle.Windsor;
 using Nomad.Communication.EventAggregation;
 using Nomad.Distributed.Communication;
+using Nomad.Distributed.Communication.Deliveries.SingleDelivery;
 using Nomad.Distributed.Communication.Deliveries.TopicDelivery;
 
 namespace Nomad.Distributed.Installers
@@ -22,10 +23,12 @@ namespace Nomad.Distributed.Installers
 			container.Register(
 				Component.For<IGuiThreadProvider>().ImplementedBy<LazyWpfGuiThreadProvider>(),
 				Component.For<ITopicDeliverySubsystem>().ImplementedBy<BasicTopicDeliverySubsystem>(),
+				Component.For<ISingleDeliverySubsystem>().ImplementedBy<BasicSingleDeliverySubsystem>(),
 				Component
 					.For<IEventAggregator>()
 					.UsingFactoryMethod(x => new DistributedEventAggregator(new EventAggregator(container.Resolve<IGuiThreadProvider>()),
-																								container.Resolve<ITopicDeliverySubsystem>()))
+																								container.Resolve<ITopicDeliverySubsystem>(),
+																								container.Resolve<ISingleDeliverySubsystem>()))
 					.Named(ON_SITE_NAME)
 					.LifeStyle.Singleton
 				);

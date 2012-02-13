@@ -24,7 +24,7 @@ namespace Nomad.Tests.Data.Distributed.SingleDelivery
 			{
 				string payload = "Sample Message " + i;
 				DistributableMessage message = new DistributableMessage(payload);
-				_aggregator.Publish(message);
+				_aggregator.PublishSingleDelivery(message, SingleDeliverySemantic.AtLeastOnce);
 			}
 		}
 

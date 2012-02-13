@@ -113,6 +113,7 @@
     <Compile Include="Communication\EventAggregation\WpfGuiThreadProvider.cs" />
     <Compile Include="Core\NomadConstants.cs" />
     <Compile Include="Distributed\Communication\Deliveries\IDeliverySubsystem.cs" />
+    <Compile Include="Distributed\Communication\Deliveries\SingleDelivery\BasicSingleDeliverySubsystem.cs" />
     <Compile Include="Distributed\Communication\Deliveries\SingleDelivery\ISingleDeliverySubsystem.cs" />
     <Compile Include="Distributed\Communication\Deliveries\TimedDelivery\ITimedDeliverySubsystem.cs" />
     <Compile Include="Distributed\Communication\Deliveries\TopicDelivery\BasicTopicDeliverySubsystem.cs" />

@@ -15,7 +15,8 @@ namespace Nomad.Distributed.Communication.Utils
 	{
 		private static readonly ILog Logger = LogManager.GetLogger(NomadConstants.NOMAD_LOGGER_REPOSITORY,
 		                                                           typeof (MessageSerializer));
-
+		
+		// TODO: do something about this kind of constant
 		private static decimal MESSAGE_SIZE = 65000;
 
 		public static object Deserialize(byte[] bytes)
