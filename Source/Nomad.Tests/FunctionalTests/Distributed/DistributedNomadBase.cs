@@ -13,6 +13,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 	{
 		protected readonly ModuleCompiler Compiler = new ModuleCompiler();
 		protected NomadKernel ListenerKernel;
+		protected NomadKernel ListenerKernelSecond;
 		protected NomadKernel PublisherKernel;
 		private string _sourceDir = string.Empty;
 
@@ -53,6 +54,11 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			if (ListenerKernel != null)
 			{
 				ListenerKernel.Dispose();
+			}
+
+			if (ListenerKernelSecond != null)
+			{
+				ListenerKernelSecond.Dispose();
 			}
 
 			if (PublisherKernel != null)

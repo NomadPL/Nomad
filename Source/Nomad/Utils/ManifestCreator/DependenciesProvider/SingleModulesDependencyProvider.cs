@@ -35,7 +35,7 @@ namespace Nomad.Utils.ManifestCreator.DependenciesProvider
 				catch (BadImageFormatException)
 				{
 					// nothing happens, return empty list
-					return new List<ModuleDependency>();
+					continue;
 				}
 				catch (Exception e)
 				{
