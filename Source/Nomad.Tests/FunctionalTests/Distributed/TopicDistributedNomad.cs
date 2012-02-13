@@ -25,8 +25,8 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			// path for this test (using the test method name) use in each code
 			PrepareSharedLibrary();
 
-			string publishingModuleSrc = GetSourceCodePath(typeof(SDPublishingModule));
-			string listeningModuleSrc = GetSourceCodePath(typeof(SDListeningModule));
+			string publishingModuleSrc = GetSourceCodePath(typeof(SimplePublishingModule));
+			string listeningModuleSrc = GetSourceCodePath(typeof(SimpleListeningModule));
 
 			string listener1 = GenerateListener(_runtimePath, _sharedDll, listeningModuleSrc, 1);
 
