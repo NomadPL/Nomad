@@ -182,12 +182,12 @@ namespace Nomad.Distributed.Communication
 			return delivered;
 		}
 
-		public bool PublishSingle<T>(T message, DateTime validUntil) where T : class
+		public bool PublishSingleDelivery<T>(T message, DateTime validUntil) where T : class
 		{
 			throw new NotImplementedException();
 		}
 
-		public bool PublishTimed<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class
+		public bool PublishTimelyBuffered<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class
 		{
 			throw new NotImplementedException();
 		}

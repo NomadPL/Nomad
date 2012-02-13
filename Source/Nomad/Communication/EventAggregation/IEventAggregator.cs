@@ -36,7 +36,7 @@ namespace Nomad.Communication.EventAggregation
 		/// <typeparam name="T">Type of message to send</typeparam>
 		/// <param name="message">Message to send</param>
 		/// <returns>True if called <see cref="IEventAggregator"/> implementing instance had subscriptions for <see cref="T"/></returns>
-		Boolean Publish<T>(T message) where T : class;
+		bool Publish<T>(T message) where T : class;
 
 		/// <summary>
 		/// Notifies all subscribed members about passed <paramref name="message"/>.
@@ -46,7 +46,7 @@ namespace Nomad.Communication.EventAggregation
 		/// <param name="message">Message to send</param>
 		/// <param name="validUntil">Time at which the message will expire and won't be deliverable any more.</param>
 		/// <returns>True if called <see cref="IEventAggregator"/> implementing instance had subscriptions for <see cref="T"/></returns>
-		bool PublishSingle<T>(T message, DateTime validUntil) where T : class;
+		bool PublishSingleDelivery<T>(T message, DateTime validUntil) where T : class;
 
 		/// <summary>
 		/// Notifies single subscribed member about passed <paramref name="message"/>
@@ -56,6 +56,6 @@ namespace Nomad.Communication.EventAggregation
 		/// <param name="message">Message to send</param>
 		/// <param name="singleDeliverySemantic"><see cref="SingleDeliverySemantic"/> chosen for delivery </param>
 		/// <returns>True if called <see cref="IEventAggregator"/> implementing instance had subscriptions for <see cref="T"/></returns>
-		bool PublishTimed<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class;
+		bool PublishTimelyBuffered<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class;
 	}
 }
