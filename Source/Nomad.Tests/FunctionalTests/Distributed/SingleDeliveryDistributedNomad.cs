@@ -3,6 +3,7 @@ using System.Threading;
 using Nomad.Core;
 using Nomad.Distributed;
 using Nomad.Modules.Discovery;
+using Nomad.Tests.Data.Distributed.Commons;
 using Nomad.Tests.Data.Distributed.SingleDelivery;
 using Nomad.Utils.ManifestCreator;
 using Nomad.Utils.ManifestCreator.DependenciesProvider;
@@ -25,7 +26,32 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		{
 			PrepareSharedLibrary();
 
+			string publishingModuleSrc = GetSourceCodePath(typeof (SDPublishingModule));
+			string listeningModuleSrc = GetSourceCodePath(typeof (SDListeningModule));
 
+			string listener1 = GenerateListener(RuntimePath, _sharedDll, listeningModuleSrc, 1);
+			string listener2 = GenerateListener(RuntimePath, _sharedDll, listeningModuleSrc, 2);
+
+			string publisherDll = Compiler.GenerateModuleFromCode(publishingModuleSrc, _sharedDll);
+			ManifestBuilderConfiguration manifestConfiguration = ManifestBuilderConfiguration.Default;
+			manifestConfiguration.ModulesDependenciesProvider = new SingleModulesDependencyProvider();
+			Compiler.GenerateManifestForModule(publisherDll, KeyFile, manifestConfiguration);
+
+			// use the default Nomad Configuration
+			ListenerKernel = new NomadKernel();
+			IModuleDiscovery listnerDiscovery =
+				new CompositeModuleDiscovery(new SingleModuleDiscovery(listener1), new SingleModuleDiscovery(listener2));
+			ListenerKernel.LoadModules(listnerDiscovery);
+			DistributedMessageCarrier firstCarrier = CreateCarrier(ListenerKernel);
+
+			PublisherKernel = new NomadKernel();
+			IModuleDiscovery publisherDiscovery = new SingleModuleDiscovery(publisherDll);
+			PublisherKernel.LoadModules(publisherDiscovery);
+
+			Thread.Sleep(PUBLISH_TIMEOUT);
+			int firstMsg = firstCarrier.GetStatus.Count;
+
+			Assert.AreEqual(5, firstMsg, "The number of delivered messages is not exactly 5");
 		}
 
 		[Test]
@@ -61,7 +87,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			ListenerKernel = new NomadKernel(config1);
 			IModuleDiscovery listnerDiscovery = new SingleModuleDiscovery(listener1);
 			ListenerKernel.LoadModules(listnerDiscovery);
-			var firstCarrier = CreateCarrier(ListenerKernel);
+			DistributedMessageCarrier firstCarrier = CreateCarrier(ListenerKernel);
 
 			NomadConfiguration config2 = NomadConfiguration.Default;
 			config2.DistributedConfiguration = DistributedConfiguration.Default;
@@ -71,7 +97,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			ListenerKernelSecond = new NomadKernel(config2);
 			IModuleDiscovery listenerDiscovery2 = new SingleModuleDiscovery(listener2);
 			ListenerKernelSecond.LoadModules(listenerDiscovery2);
-			var secondCarrier = CreateCarrier(ListenerKernelSecond);
+			DistributedMessageCarrier secondCarrier = CreateCarrier(ListenerKernelSecond);
 
 			// create publishing kernel
 			NomadConfiguration publisherConfig = NomadConfiguration.Default;
