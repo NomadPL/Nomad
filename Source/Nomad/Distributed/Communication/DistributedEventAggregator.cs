@@ -153,6 +153,16 @@ namespace Nomad.Distributed.Communication
 			}
 		}
 
+		public void OnPublishSingleDelivery(byte[] byteStream, TypeDescriptor typeDescriptor)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void OnPublishTimelyDelivery(byte[] byteSteam, TypeDescriptor typeDescriptor, DateTime voidTime)
+		{
+			throw new NotImplementedException();
+		}
+
 		#endregion
 
 		#region IEventAggregator Members
