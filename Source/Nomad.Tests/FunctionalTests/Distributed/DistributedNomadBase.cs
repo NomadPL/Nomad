@@ -121,7 +121,10 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			_runtimePath = RUNTIME_LOCATION + GetCurrentClassName() + "\\" + GetCurrentMethodName();
 
 			// remove the directory if it is there already
-			Directory.Delete(_runtimePath,true);
+			if (Directory.Exists(_runtimePath))
+			{
+				Directory.Delete(_runtimePath, true);	
+			}
 
 			string sharedModuleSrc = GetSourceCodePath(typeof (DistributableMessage));
 			_sharedDll = Compiler.GenerateModuleFromCode(sharedModuleSrc);
