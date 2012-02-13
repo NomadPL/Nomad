@@ -10,7 +10,6 @@ using Nomad.Distributed.Communication.Utils;
 using Nomad.Distributed.Installers;
 using Nomad.Messages;
 using Nomad.Messages.Distributed;
-using log4net.Repository.Hierarchy;
 using Version = Nomad.Utils.Version;
 
 namespace Nomad.Distributed.Communication
@@ -128,7 +127,6 @@ namespace Nomad.Distributed.Communication
 				// TODO: this is totaly not refactor aware use expression tree to get this publish thing
 				MethodInfo methodInfo = LocalEventAggregator.GetType().GetMethod("Publish");
 				MethodInfo goodMethodInfo = methodInfo.MakeGenericMethod(type);
-
 				goodMethodInfo.Invoke(LocalEventAggregator, new[] {sendObject});
 			}
 			catch (Exception e)
@@ -138,8 +136,42 @@ namespace Nomad.Distributed.Communication
 
 			// NOTE: this is the role of subsystem to answer 
 			return true;
-			 
 		}
+
+
+		public bool OnPublishSingleDelivery(byte[] byteStream, TypeDescriptor typeDescriptor)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void OnPublishTimelyBufferedDelivery(byte[] byteStream, TypeDescriptor typeDescriptor, DateTime voidTime)
+		{
+			logger.Debug(string.Format("Acquired timelyBuffered message of type {0} valid until {1}", typeDescriptor, voidTime));
+
+			try
+			{
+				//try recreating this type 
+				object sendObject;
+				Type type;
+				UnPackData(typeDescriptor, byteStream, out sendObject, out type);
+
+				// invoke this generic method with type T
+				MethodInfo methodInfo = LocalEventAggregator.GetType().GetMethod("PublishTimelyBuffered");
+				MethodInfo goodMethodInfo = methodInfo.MakeGenericMethod(type);
+
+				goodMethodInfo.Invoke(LocalEventAggregator, new[] {sendObject, voidTime});
+			}
+			catch (Exception e)
+			{
+				logger.Warn("The type of the timelyBuffered message could not be recreated", e);
+			}
+		}
+
+		#endregion
+
+		#region Data Packing
+
+		// NOTE: this code could be easly refactored into other class (quite the same as serialization / desrialization)
 
 		private void UnPackData(TypeDescriptor typeDescriptor, byte[] byteStream, out object sendObject, out Type type)
 		{
@@ -164,49 +196,15 @@ namespace Nomad.Distributed.Communication
 			}
 		}
 
-		public bool OnPublishSingleDelivery(byte[] byteStream, TypeDescriptor typeDescriptor)
+		private void PackData<T>(T message, out byte[] bytes, out TypeDescriptor descriptor)
 		{
-			throw new NotImplementedException();
-		}
-
-		public void OnPublishTimelyBufferedDelivery(byte[] byteStream, TypeDescriptor typeDescriptor, DateTime voidTime)
-		{
-			logger.Debug(string.Format("Acquired timelyBuffered message of type {0} valid until {1}", typeDescriptor, voidTime));
-
-			try
+			if (message is NomadMessage)
 			{
-				// try recreating this type 
-				Type type = Type.GetType(typeDescriptor.QualifiedName);
-				if (type != null)
-				{
-					var nomadVersion = new Version(type.Assembly.GetName().Version);
-
-					if (!nomadVersion.Equals(typeDescriptor.Version))
-					{
-						throw new InvalidCastException("The version of the assembly does not match");
-					}
-				}
-
-				// try deserializing object
-				Object sendObject = MessageSerializer.Deserialize(byteStream);
-
-				// check if o is assignable
-				if (type != null && !type.IsInstanceOfType(sendObject))
-				{
-					throw new InvalidCastException("The sent object cannot be casted to sent type");
-				}
-
-				// invoke this generic method with type T
-				// TODO: this is totaly not refactor aware use expression tree to get this publish thing
-				MethodInfo methodInfo = LocalEventAggregator.GetType().GetMethod("PublishTimelyBuffered");
-				MethodInfo goodMethodInfo = methodInfo.MakeGenericMethod(type);
-
-				goodMethodInfo.Invoke(LocalEventAggregator, new[] {sendObject, voidTime});
+				throw new ArgumentException("The type 'NomadMessage' are not being sent");
 			}
-			catch (Exception e)
-			{
-				logger.Warn("The type of the timelyBuffered message could not be recreated", e);
-			}
+
+			bytes = MessageSerializer.Serialize(message);
+			descriptor = new TypeDescriptor(message.GetType());
 		}
 
 		#endregion
@@ -231,18 +229,18 @@ namespace Nomad.Distributed.Communication
 			// try publishing message in the local system on this machine
 			bool delivered = _localEventAggregator.Publish(message);
 
-			// filter local NomadMessage
-			if (message is NomadMessage)
+			// prepare for publishing remotely
+			byte[] bytes;
+			TypeDescriptor descriptor;
+			try
 			{
-				return delivered;
+				PackData(message, out bytes, out descriptor);
 			}
-
-			// try publishing message in the remote system
-			byte[] bytes = MessageSerializer.Serialize(message);
-			if (bytes == null)
+			catch (Exception e)
+			{
+				logger.Warn("Could not preapre message for sending", e);
 				return false;
-
-			var descriptor = new TypeDescriptor(message.GetType());
+			}
 
 			bool remoteDelivered = _topicDelivery.SentAll(RemoteDistributedEventAggregator, bytes, descriptor);
 
@@ -254,18 +252,18 @@ namespace Nomad.Distributed.Communication
 			// try publishing message in the local system on this machine
 			_localEventAggregator.PublishTimelyBuffered(message, validUntil);
 
-			// filter local NomadMessage
-			if (message is NomadMessage)
+			// prepare for publishing remotely
+			byte[] bytes;
+			TypeDescriptor descriptor;
+			try
 			{
+				PackData(message, out bytes, out descriptor);
+			}
+			catch (Exception e)
+			{
+				logger.Warn("Could not preapre message for sending", e);
 				return;
 			}
-
-			// try publishing message in the remote system
-			byte[] bytes = MessageSerializer.Serialize(message);
-			if (bytes == null)
-				return;
-
-			var descriptor = new TypeDescriptor(message.GetType());
 
 			// TODO: add _timelyBufferedDelivery ;P
 			// deliverying to remote sites

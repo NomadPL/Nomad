@@ -55,9 +55,7 @@ namespace Nomad.Distributed.Communication.Utils
 			catch (Exception e)
 			{
 				Logger.Warn("Serialization warning: ", e);
-
-				// further sending is not possible
-				return null;
+				throw;
 			}
 			finally
 			{
