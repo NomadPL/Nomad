@@ -110,9 +110,19 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			return new StackTrace().GetFrame(2).GetMethod().Name;
 		}
 
+		protected String GetCurrentClassName()
+		{
+			return this.GetType().Name;
+		}
+
 		protected void PrepareSharedLibrary()
 		{
-			_runtimePath = RUNTIME_LOCATION + GetCurrentMethodName();
+
+			_runtimePath = RUNTIME_LOCATION + GetCurrentClassName() + "\\" + GetCurrentMethodName();
+
+			// remove the directory if it is there already
+			Directory.Delete(_runtimePath,true);
+
 			string sharedModuleSrc = GetSourceCodePath(typeof (DistributableMessage));
 			_sharedDll = Compiler.GenerateModuleFromCode(sharedModuleSrc);
 			Compiler.OutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _runtimePath);
