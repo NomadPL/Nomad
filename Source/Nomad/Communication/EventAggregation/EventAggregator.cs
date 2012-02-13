@@ -16,7 +16,8 @@ namespace Nomad.Communication.EventAggregation
 
 		private IEventAggregatorTicket<WpfGuiChangedMessage> _ticket;
 
-		private readonly IDictionary<Type, List<BufferedMessage<Object>>> _bufferedMessages = new Dictionary<Type, List<BufferedMessage<Object>>>();
+		private readonly IDictionary<Type, List<BufferedMessage>> _bufferedMessages =
+			new Dictionary<Type, List<BufferedMessage>>();
 
 
 		///<summary>
@@ -74,7 +75,7 @@ namespace Nomad.Communication.EventAggregation
 		/// <param name="deliveryMethod"></param>
 		/// <returns></returns>
 		public IEventAggregatorTicket<T> Subscribe<T>(Action<T> action,
-													  DeliveryMethod deliveryMethod) where T : class
+		                                              DeliveryMethod deliveryMethod) where T : class
 		{
 			Type type = typeof (T);
 			var ticket = new EventAggregatorTicket<T>(action, deliveryMethod, _guiThreadProvider);
@@ -94,6 +95,26 @@ namespace Nomad.Communication.EventAggregation
 			}
 
 			ticket.TicketDisposed += TicketDisposed;
+
+			// deliverying possible awaiting buffered messages of T type
+			List<BufferedMessage> tTypeBuffer;
+			lock (_bufferedMessages)
+			{
+				if (!_bufferedMessages.TryGetValue(type, out tTypeBuffer))
+				{
+					tTypeBuffer = new List<BufferedMessage>();
+					_bufferedMessages[type] = tTypeBuffer;
+				}
+			}
+
+			// delivering current messages
+			foreach (var bufferedMessage in tTypeBuffer)
+			{
+				Publish((T) bufferedMessage.Message);
+			}
+
+			// clearing outdate messages from the buffer
+			tTypeBuffer.RemoveAll(m => m.ExpiryTime < DateTime.Now);
 
 			return ticket;
 		}
@@ -133,26 +154,36 @@ namespace Nomad.Communication.EventAggregation
 
 		public bool PublishTimelyBuffered<T>(T message, DateTime validUntil) where T : class
 		{
-			/*
+			// adding message to local buffer
 			Type type = typeof (T);
-			var bufferedMessage = new BufferedMessage<T>(message, validUntil);
-			List<BufferedMessage<Type>> buffer = null;
-			HashSet<IEventAggregatorTicket> tickets = null;
+			var newMessage = new BufferedMessage(message, validUntil);
+			List<BufferedMessage> tTypeBuffer;
 			lock (_bufferedMessages)
 			{
-				if (!_bufferedMessages.TryGetValue(type, out buffer))
+				if (!_bufferedMessages.TryGetValue(type, out tTypeBuffer))
 				{
-					tickets = new HashSet<IEventAggregatorTicket>();
-					_subscriptions[type] = tickets;
+					tTypeBuffer = new List<BufferedMessage>();
+					_bufferedMessages[type] = tTypeBuffer;
 				}
 			}
 
-			lock (tickets)
+			lock (tTypeBuffer)
 			{
-				tickets.Add(ticket);
+				tTypeBuffer.Add(newMessage);
 			}
-			*/
-			throw new NotImplementedException();
+
+			// delivering current messages
+			bool delivered = true;
+			foreach (var bufferedMessage in tTypeBuffer)
+			{
+				if (!Publish((T) bufferedMessage.Message))
+					delivered = false;
+			}
+
+			// clearing outdate messages from the buffer
+			tTypeBuffer.RemoveAll(m => m.ExpiryTime < DateTime.Now);
+
+			return delivered;
 		}
 
 		public bool PublishSingleDelivery<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class

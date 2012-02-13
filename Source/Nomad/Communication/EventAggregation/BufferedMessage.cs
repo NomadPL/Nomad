@@ -6,12 +6,12 @@ namespace Nomad.Communication.EventAggregation
 	/// Class used to hold messages that need to be buffered and possibly delivered in the future.
 	/// </summary>
 	/// <typeparam name="T"></typeparam>
-	internal class BufferedMessage<T>
+	internal class BufferedMessage
 	{
-		public T Message { get; private set; }
+		public object Message { get; private set; }
 		public DateTime ExpiryTime { get; private set; }
 
-		public BufferedMessage(T message, DateTime expiryTime)
+		public BufferedMessage(object message, DateTime expiryTime)
 		{
 			Message = message;
 			ExpiryTime = expiryTime;

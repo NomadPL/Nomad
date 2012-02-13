@@ -23,9 +23,9 @@ namespace Nomad.Tests.Data.Distributed.Topic
 
 		public void OnLoad()
 		{
-			_eventAggregator.Subscribe<DistributableMessage>(CallBack);
 			_fileInfo = new FileInfo(Assembly.GetExecutingAssembly().Location+"_CounterFile");
 			_fileInfo.Delete();
+			_eventAggregator.Subscribe<DistributableMessage>(CallBack);
 		}
 
 

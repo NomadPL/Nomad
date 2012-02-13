@@ -109,6 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FunctionalTests\Distributed\BasicDistributedNomad.cs" />
+    <Compile Include="FunctionalTests\Distributed\TimelyBufferedDelivery.cs" />
     <Compile Include="FunctionalTests\Distributed\DistributedNomadBase.cs" />
     <Compile Include="FunctionalTests\Distributed\NomadSimpleMessage.cs" />
     <Compile Include="FunctionalTests\Distributed\SingleDeliveryDistributedNomad.cs" />
