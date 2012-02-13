@@ -10,6 +10,7 @@ using Nomad.Distributed.Communication.Utils;
 using Nomad.Distributed.Installers;
 using Nomad.Messages;
 using Nomad.Messages.Distributed;
+using log4net.Repository.Hierarchy;
 using Version = Nomad.Utils.Version;
 
 namespace Nomad.Distributed.Communication
@@ -26,8 +27,8 @@ namespace Nomad.Distributed.Communication
 	public class DistributedEventAggregator : MarshalByRefObject,
 	                                          IEventAggregator, IDistributedEventAggregator, IDisposable
 	{
-		private static readonly ILog Loggger = LogManager.GetLogger(NomadConstants.NOMAD_LOGGER_REPOSITORY,
-		                                                            typeof (DistributedEventAggregator));
+		private static readonly ILog logger = LogManager.GetLogger(NomadConstants.NOMAD_LOGGER_REPOSITORY,
+		                                                           typeof (DistributedEventAggregator));
 
 		private static IEventAggregator _localEventAggregator;
 
@@ -93,7 +94,7 @@ namespace Nomad.Distributed.Communication
 			catch (Exception e)
 			{
 				// NOTE: the exception must be eaten -> the cleanup show must go on
-				Loggger.Error("There was serious error during the cleanup phase", e);
+				logger.Error("There was serious error during the cleanup phase", e);
 			}
 		}
 
@@ -103,7 +104,7 @@ namespace Nomad.Distributed.Communication
 
 		public void OnPublishControl(NomadDistributedMessage message)
 		{
-			Loggger.Debug(string.Format("Acquired message {0}", message));
+			logger.Debug(string.Format("Acquired message {0}", message));
 
 			// propagate message to the local subscribers
 			LocalEventAggregator.Publish(message);
@@ -114,7 +115,7 @@ namespace Nomad.Distributed.Communication
 
 		public void OnPublish(byte[] byteStream, TypeDescriptor typeDescriptor)
 		{
-			Loggger.Debug(string.Format("Acquired message of type {0}", typeDescriptor));
+			logger.Debug(string.Format("Acquired message of type {0}", typeDescriptor));
 
 			// TODO: this code should invoke one of the subsystems to be working good
 			try
@@ -149,7 +150,7 @@ namespace Nomad.Distributed.Communication
 			}
 			catch (Exception e)
 			{
-				Loggger.Warn("The type not be recreated", e);
+				logger.Warn("The type not be recreated", e);
 			}
 		}
 
@@ -158,9 +159,44 @@ namespace Nomad.Distributed.Communication
 			throw new NotImplementedException();
 		}
 
-		public void OnPublishTimelyBufferedDelivery(byte[] byteSteam, TypeDescriptor typeDescriptor, DateTime voidTime)
+		public void OnPublishTimelyBufferedDelivery(byte[] byteStream, TypeDescriptor typeDescriptor, DateTime voidTime)
 		{
-			throw new NotImplementedException();
+			logger.Debug(string.Format("Acquired timelyBuffered message of type {0} valid until {1}", typeDescriptor, voidTime));
+
+			try
+			{
+				// try recreating this type 
+				Type type = Type.GetType(typeDescriptor.QualifiedName);
+				if (type != null)
+				{
+					var nomadVersion = new Version(type.Assembly.GetName().Version);
+
+					if (!nomadVersion.Equals(typeDescriptor.Version))
+					{
+						throw new InvalidCastException("The version of the assembly does not match");
+					}
+				}
+
+				// try deserializing object
+				Object sendObject = MessageSerializer.Deserialize(byteStream);
+
+				// check if o is assignable
+				if (type != null && !type.IsInstanceOfType(sendObject))
+				{
+					throw new InvalidCastException("The sent object cannot be casted to sent type");
+				}
+
+				// invoke this generic method with type T
+				// TODO: this is totaly not refactor aware use expression tree to get this publish thing
+				MethodInfo methodInfo = LocalEventAggregator.GetType().GetMethod("PublishTimelyBuffered");
+				MethodInfo goodMethodInfo = methodInfo.MakeGenericMethod(type);
+
+				goodMethodInfo.Invoke(LocalEventAggregator, new[] {sendObject, voidTime});
+			}
+			catch (Exception e)
+			{
+				logger.Warn("The type of the timelyBuffered message could not be recreated", e);
+			}
 		}
 
 		#endregion
@@ -221,7 +257,21 @@ namespace Nomad.Distributed.Communication
 
 			var descriptor = new TypeDescriptor(message.GetType());
 
-			_topicDelivery.SentAll(RemoteDistributedEventAggregator, bytes, descriptor);
+			// TODO: add _timelyBufferedDelivery ;P
+			// deliverying to remote sites
+			foreach (IDistributedEventAggregator dea in _deas)
+			{
+				try
+				{
+					dea.OnPublishTimelyBufferedDelivery(bytes, descriptor, validUntil);
+				}
+				catch (Exception e)
+				{
+					logger.Warn(
+						string.Format("Could not sent timelyBuffered Message '{0}' valid until {2} to DEA: {1}", descriptor, dea,
+						              validUntil), e);
+				}
+			}
 		}
 
 		public bool PublishSingleDelivery<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class
@@ -246,7 +296,7 @@ namespace Nomad.Distributed.Communication
 				}
 				catch (Exception e)
 				{
-					Loggger.Warn("Exception during sending to DEA", e);
+					logger.Warn("Exception during sending to DEA", e);
 					throw;
 				}
 			}

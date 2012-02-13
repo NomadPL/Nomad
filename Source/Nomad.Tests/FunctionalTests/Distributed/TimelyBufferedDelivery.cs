@@ -143,7 +143,6 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		}
 
 		[Test]
-		[Ignore("Distributed implementation to be done")]
 		public void distributed_module_publishes_and_later_loaded_listener_module_receives_those_messages()
 		{
 			// path for this test (using the test method name) use in each code
@@ -172,6 +171,8 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			ListenerKernel = new NomadKernel(config1);
 			IModuleDiscovery listenerDiscovery = new SingleModuleDiscovery(listener1);
 
+			// postponed listener module load
+			ListenerKernel.LoadModules(listenerDiscovery);
 
 			// create publishing kernel
 			NomadConfiguration publisherConfig = NomadConfiguration.Default;
@@ -182,9 +183,6 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			IModuleDiscovery publisherDiscovery = new SingleModuleDiscovery(publisherDll);
 			PublisherKernel.LoadModules(publisherDiscovery);
 
-			// postponed listener module load
-			ListenerKernel.LoadModules(listenerDiscovery);
-
 			// assert the events being published	
 			var fi = new FileInfo(listener1 + "_CounterFile");
 			if (fi.Exists)
@@ -192,7 +190,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 				StreamReader counterReader = fi.OpenText();
 				int value = Convert.ToInt32(counterReader.ReadLine());
 				// Verifying that locally the event aggregator works properly
-				Assert.AreEqual(0, value);
+				Assert.AreEqual(5, value);
 				counterReader.Close();
 			}
 			else
