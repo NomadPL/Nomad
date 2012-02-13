@@ -1,4 +1,9 @@
-﻿using System.ServiceModel;
+﻿using System;
+using System.ServiceModel;
+using Nomad.Communication.EventAggregation;
+using Nomad.Distributed.Communication.Deliveries.SingleDelivery;
+using Nomad.Distributed.Communication.Deliveries.TimedDelivery;
+using Nomad.Distributed.Communication.Deliveries.TopicDelivery;
 using Nomad.Messages.Distributed;
 
 namespace Nomad.Distributed.Communication
@@ -18,7 +23,26 @@ namespace Nomad.Distributed.Communication
 		///		Invoked by other <see cref="DistributedEventAggregator"/> instances
 		/// to send <c>user defined messages</c>.
 		/// </summary>
+		/// <remarks>
+		///		Called by <see cref="ITopicDeliverySubsystem"/>.
+		/// </remarks>
 		[OperationContract]
 		void OnPublish(byte[] byteStream, TypeDescriptor typeDescriptor);
+
+		/// <summary>
+		///		Invoked by other <see cref="DistributedEventAggregator"/> especially <see cref="ISingleDeliverySubsystem"/>
+		/// for implementing <see cref="IEventAggregator.PublishSingleDelivery{T}"/>.
+		/// </summary>
+		/// <param name="byteStream"></param>
+		/// <param name="typeDescriptor"></param>
+		[OperationContract]
+		void OnPublishSingleDelivery(byte[] byteStream, TypeDescriptor typeDescriptor);
+
+		/// <summary>
+		///		Invoked by other <see cref="DistributedEventAggregator"/> instances (especially <see cref="ITimedDeliverySubsystem"/>
+		/// to send some user defined message with <see cref="IEventAggregator.PublishTimelyBuffered{T}"/>
+		/// </summary>		
+		[OperationContract]
+		void OnPublishTimelyDelivery(byte[] byteSteam, TypeDescriptor typeDescriptor,DateTime voidTime);
 	}
 }
