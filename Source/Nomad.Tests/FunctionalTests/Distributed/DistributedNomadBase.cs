@@ -42,6 +42,8 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		protected NomadKernel ListenerKernel;
 		protected NomadKernel ListenerKernelSecond;
 		protected NomadKernel PublisherKernel;
+		protected NomadKernel PublisherKernelSecond;
+
 		private string _sourceDir = string.Empty;
 
 		protected string SourceFolder
@@ -90,6 +92,11 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			if (PublisherKernel != null)
 			{
 				PublisherKernel.Dispose();
+			}
+
+			if (PublisherKernelSecond != null)
+			{
+				PublisherKernelSecond.Dispose();
 			}
 		}
 

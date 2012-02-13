@@ -19,7 +19,7 @@ namespace Nomad.Tests.Data.Distributed.Commons
 				Assembly asm = AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.Equals("DistributableMessage")).Select( x => x).Single();
 				Type type = asm.GetType("Nomad.Tests.Data.Distributed.Commons.DistributedMessageRegistry");
 
-				var methodInfo = type.GetMethods().Where(x => x.Name.Contains("Messages")).Single();
+				var methodInfo = type.GetMethods().Single(x => x.Name.Contains("Messages"));
 				var result = methodInfo.Invoke(null, null);
 
 				return (IList<string>) result;
