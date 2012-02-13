@@ -27,7 +27,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			string publishingModuleSrc = GetSourceCodePath(typeof (SimplePublishingModule));
 			string listeningModuleSrc = GetSourceCodePath(typeof (SimpleListeningModule));
 
-			string listener1 = GenerateListener(_runtimePath, _sharedDll, listeningModuleSrc, 1);
+			string listener1 = GenerateListener(RuntimePath, _sharedDll, listeningModuleSrc, 1);
 
 			string publisherDll = Compiler.GenerateModuleFromCode(publishingModuleSrc, _sharedDll);
 			ManifestBuilderConfiguration manifestConfiguration = ManifestBuilderConfiguration.Default;
@@ -83,8 +83,8 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			string publishingModuleSrc = GetSourceCodePath(typeof(SimplePublishingModule));
 			string listeningModuleSrc = GetSourceCodePath(typeof(SimpleListeningModule));
 
-			string listener1 = GenerateListener(_runtimePath, _sharedDll, listeningModuleSrc, 1);
-			string listener2 = GenerateListener(_runtimePath, _sharedDll, listeningModuleSrc, 2);
+			string listener1 = GenerateListener(RuntimePath, _sharedDll, listeningModuleSrc, 1);
+			string listener2 = GenerateListener(RuntimePath, _sharedDll, listeningModuleSrc, 2);
 
 			string publisherDll = Compiler.GenerateModuleFromCode(publishingModuleSrc, _sharedDll);
 			ManifestBuilderConfiguration manifestConfiguration = ManifestBuilderConfiguration.Default;

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using Nomad.Core;
 using Nomad.KeysGenerator;
 using Nomad.Tests.Data.Distributed.Commons;
@@ -94,13 +95,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 
 		protected String KeyFile;
 		protected string _sharedDll;
-		protected string _runtimePath;
-
-		protected String GetSourceCodePath(String codeLocation)
-		{
-			string dirPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, SourceFolder);
-			return Path.Combine(dirPath, codeLocation);
-		}
+		protected string RuntimePath;
 
 		protected String GetSourceCodePath(Type type)
 		{
@@ -121,17 +116,17 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		protected void PrepareSharedLibrary()
 		{
 
-			_runtimePath = RUNTIME_LOCATION + GetCurrentClassName() + "\\" + GetCurrentMethodName();
+			RuntimePath = RUNTIME_LOCATION + GetCurrentClassName() + "\\" + GetCurrentMethodName();
 
 			// remove the directory if it is there already
-			if (Directory.Exists(_runtimePath))
+			if (Directory.Exists(RuntimePath))
 			{
-				Directory.Delete(_runtimePath, true);	
+				Directory.Delete(RuntimePath, true);	
 			}
 
 			string sharedModuleSrc = GetSourceCodePath(typeof (DistributableMessage));
 			string sharedRegistry = GetSourceCodePath(typeof (DistributedMessageRegistry));
-			Compiler.OutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _runtimePath);
+			Compiler.OutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, RuntimePath);
 			_sharedDll = Compiler.GenerateModuleFromCode(new[] {sharedModuleSrc,sharedRegistry});
 		}
 
@@ -146,13 +141,13 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			return listenerDll;
 		}
 
-		protected static DistributedMessageCarrier CreateCarrier(NomadKernel kernel)
+		protected DistributedMessageCarrier CreateCarrier(NomadKernel kernel)
 		{
-			var asmName = typeof (DistributedMessageCarrier).Assembly.FullName;
-			var typeName = typeof (DistributedMessageCarrier).FullName;
-			var carrier = (DistributedMessageCarrier) kernel.ModuleAppDomain.CreateInstanceAndUnwrap(asmName, typeName);
+			var typeName = typeof(DistributedMessageCarrier).FullName;
+			var asmName = typeof(DistributedMessageCarrier).Assembly.FullName;
+			var carrier = kernel.ModuleAppDomain.CreateInstanceAndUnwrap(asmName, typeName);
 
-			return carrier;
+			return (DistributedMessageCarrier) carrier;
 		}
 	}
 }
