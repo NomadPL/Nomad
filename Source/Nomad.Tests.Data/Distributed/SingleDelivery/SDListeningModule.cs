@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Reflection;
 using Nomad.Communication.EventAggregation;
 using Nomad.Tests.Data.Distributed.Commons;
 
@@ -7,17 +9,13 @@ namespace Nomad.Tests.Data.Distributed.SingleDelivery
 	/// <summary>
 	///		Simple module for listening to data
 	/// </summary>
-	public class SimpleListeningModule : Nomad.Modules.IModuleBootstraper
+	public class SDListeningModule : Modules.IModuleBootstraper
 	{
 		private readonly IEventAggregator _eventAggregator;
-		private int _counter;
-		private FileInfo _fileInfo = new FileInfo(@"Modules\Distributed\Listener\CounterFile");
 
-		public SimpleListeningModule(IEventAggregator eventAggregator)
+		public SDListeningModule(IEventAggregator eventAggregator)
 		{
-			_counter = 0;
 			_eventAggregator = eventAggregator;
-			_fileInfo.Delete();
 		}
 
 		public void OnLoad()
@@ -25,20 +23,16 @@ namespace Nomad.Tests.Data.Distributed.SingleDelivery
 			_eventAggregator.Subscribe<DistributableMessage>(CallBack);
 		}
 
-		private void CallBack(DistributableMessage obj)
+		private static void CallBack(DistributableMessage obj)
 		{
-			++_counter;
-			if (_counter >=5)
-			{
-				StreamWriter text = _fileInfo.CreateText();
-				text.WriteLine(_counter);
-				text.Close();
-			}
+			string myName = Assembly.GetExecutingAssembly().GetName().Name;
+			DistributedMessageRegistry.Add(myName);
+			Console.WriteLine("Added message '{0}' to the registry",myName);
 		}
 
 		public void OnUnLoad()
 		{
-
+			// do nothing
 		}
 	}
 }

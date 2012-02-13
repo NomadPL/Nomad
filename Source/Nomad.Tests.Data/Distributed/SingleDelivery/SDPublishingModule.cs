@@ -7,11 +7,11 @@ namespace Nomad.Tests.Data.Distributed.SingleDelivery
 	/// <summary>
 	///		Sample class used for publishing data
 	/// </summary>
-	public class SimplePublishingModule : IModuleBootstraper
+	public class SDPublishingModule : IModuleBootstraper
 	{
 		private readonly IEventAggregator _aggregator;
 
-		public SimplePublishingModule(IEventAggregator eventAggregator)
+		public SDPublishingModule(IEventAggregator eventAggregator)
 		{
 			_aggregator = eventAggregator;
 		}

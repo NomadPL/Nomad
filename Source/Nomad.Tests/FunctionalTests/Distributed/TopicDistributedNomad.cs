@@ -3,13 +3,12 @@ using System.IO;
 using Nomad.Core;
 using Nomad.Distributed;
 using Nomad.Modules.Discovery;
+using Nomad.Tests.Data.Distributed.SingleDelivery;
 using Nomad.Tests.Data.Distributed.Topic;
 using Nomad.Utils.ManifestCreator;
 using NUnit.Framework;
 using Nomad.Utils.ManifestCreator.DependenciesProvider;
 using TestsShared;
-using SimpleListeningModule = Nomad.Tests.Data.Distributed.SingleDelivery.SimpleListeningModule;
-using SimplePublishingModule = Nomad.Tests.Data.Distributed.SingleDelivery.SimplePublishingModule;
 
 namespace Nomad.Tests.FunctionalTests.Distributed
 {
@@ -26,8 +25,8 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			// path for this test (using the test method name) use in each code
 			PrepareSharedLibrary();
 
-			string publishingModuleSrc = GetSourceCodePath(typeof(SimplePublishingModule));
-			string listeningModuleSrc = GetSourceCodePath(typeof(SimpleListeningModule));
+			string publishingModuleSrc = GetSourceCodePath(typeof(SDPublishingModule));
+			string listeningModuleSrc = GetSourceCodePath(typeof(SDListeningModule));
 
 			string listener1 = GenerateListener(_runtimePath, _sharedDll, listeningModuleSrc, 1);
 

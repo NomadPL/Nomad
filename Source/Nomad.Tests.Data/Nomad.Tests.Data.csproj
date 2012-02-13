@@ -42,8 +42,8 @@
     <Compile Include="Distributed\Commons\DistributableMessage.cs" />
     <Compile Include="Distributed\Commons\DistributedMessageCarrier.cs" />
     <Compile Include="Distributed\Commons\DistributedMessageRegistry.cs" />
-    <Compile Include="Distributed\SingleDelivery\SimpleListeningModule.cs" />
-    <Compile Include="Distributed\SingleDelivery\SimplePublishingModule.cs" />
+    <Compile Include="Distributed\SingleDelivery\SDListeningModule.cs" />
+    <Compile Include="Distributed\SingleDelivery\SDPublishingModule.cs" />
     <Compile Include="Distributed\Topic\DistributableMessage.cs" />
     <Compile Include="Distributed\Topic\SimpleListeningModule.cs" />
     <Compile Include="Distributed\Topic\SimplePublishingModule.cs" />

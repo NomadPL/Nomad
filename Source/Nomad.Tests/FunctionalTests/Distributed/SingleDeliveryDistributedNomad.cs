@@ -1,9 +1,8 @@
 using System;
-using System.IO;
+using System.Threading;
 using Nomad.Core;
 using Nomad.Distributed;
 using Nomad.Modules.Discovery;
-using Nomad.Tests.Data.Distributed.Commons;
 using Nomad.Tests.Data.Distributed.SingleDelivery;
 using Nomad.Utils.ManifestCreator;
 using Nomad.Utils.ManifestCreator.DependenciesProvider;
@@ -24,7 +23,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		[Test]
 		public void kernel_published_once_only_one_module_revieved()
 		{
-			string listeningModuleSrc = GetSourceCodePath(typeof (SimpleListeningModule));
+			string listeningModuleSrc = GetSourceCodePath(typeof (SDListeningModule));
 		}
 
 		[Test]
@@ -33,8 +32,8 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			// path for this test (using the test method name) use in each code
 			PrepareSharedLibrary();
 
-			string publishingModuleSrc = GetSourceCodePath(typeof (SimplePublishingModule));
-			string listeningModuleSrc = GetSourceCodePath(typeof (SimpleListeningModule));
+			string publishingModuleSrc = GetSourceCodePath(typeof (SDPublishingModule));
+			string listeningModuleSrc = GetSourceCodePath(typeof (SDListeningModule));
 
 			string listener1 = GenerateListener(_runtimePath, _sharedDll, listeningModuleSrc, 1);
 			string listener2 = GenerateListener(_runtimePath, _sharedDll, listeningModuleSrc, 2);
@@ -60,6 +59,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			ListenerKernel = new NomadKernel(config1);
 			IModuleDiscovery listnerDiscovery = new SingleModuleDiscovery(listener1);
 			ListenerKernel.LoadModules(listnerDiscovery);
+			var firstCarrier = CreateCarrier(ListenerKernel);
 
 			NomadConfiguration config2 = NomadConfiguration.Default;
 			config2.DistributedConfiguration = DistributedConfiguration.Default;
@@ -69,6 +69,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			ListenerKernelSecond = new NomadKernel(config2);
 			IModuleDiscovery listenerDiscovery2 = new SingleModuleDiscovery(listener2);
 			ListenerKernelSecond.LoadModules(listenerDiscovery2);
+			var secondCarrier = CreateCarrier(ListenerKernelSecond);
 
 			// create publishing kernel
 			NomadConfiguration publisherConfig = NomadConfiguration.Default;
@@ -80,8 +81,13 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			IModuleDiscovery publisherDiscovery = new SingleModuleDiscovery(publisherDll);
 			PublisherKernel.LoadModules(publisherDiscovery);
 
-
 			// assert the events being published
+			// wait for publishing messages etc
+			Thread.Sleep(PUBLISH_TIMEOUT);
+			int firstMsg = firstCarrier.GetStatus.Count;
+			int secondMsg = secondCarrier.GetStatus.Count;
+
+			Assert.AreEqual(5, firstMsg + secondMsg, "The number of delivered messages is not exactly 5");
 		}
 	}
 }

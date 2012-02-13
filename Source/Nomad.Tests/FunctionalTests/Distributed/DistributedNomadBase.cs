@@ -35,6 +35,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 	public class DistributedNomadBase
 	{
 		private const string RUNTIME_LOCATION = @"Modules\Distributed\";
+		protected const int PUBLISH_TIMEOUT = 1500;
 
 		protected readonly ModuleCompiler Compiler = new ModuleCompiler();
 		protected NomadKernel ListenerKernel;
@@ -129,7 +130,8 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			}
 
 			string sharedModuleSrc = GetSourceCodePath(typeof (DistributableMessage));
-			_sharedDll = Compiler.GenerateModuleFromCode(sharedModuleSrc);
+			string sharedRegistry = GetSourceCodePath(typeof (DistributedMessageRegistry));
+			_sharedDll = Compiler.GenerateModuleFromCode(new[] {sharedModuleSrc,sharedRegistry});
 			Compiler.OutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _runtimePath);
 		}
 
@@ -142,6 +144,16 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			Compiler.GenerateManifestForModule(listenerDll, KeyFile, manifestConfiguration);
 
 			return listenerDll;
+		}
+
+		protected static DistributedMessageCarrier CreateCarrier(NomadKernel kernel)
+		{
+			var asmName = typeof (DistributedMessageCarrier).Assembly.FullName;
+			var typeName = typeof (DistributedMessageCarrier).FullName;
+			var carrier = (DistributedMessageCarrier) kernel.ModuleAppDomain.CreateInstanceAndUnwrap(asmName, typeName);
+
+
+			return carrier;
 		}
 	}
 }
