@@ -24,7 +24,7 @@ namespace Nomad.Tests.Data.Distributed.TimeBuffered
 			{
 				string payload = "Sample Message " + i;
 				DistributableMessage message = new DistributableMessage(payload);
-				_aggregator.PublishTimelyBuffered(message, DateTime.Now+ new TimeSpan(0,0,1,0));
+				_aggregator.PublishTimelyBuffered(message, DateTime.Now + new TimeSpan(0, 0, 1, 0));
 			}
 		}
 

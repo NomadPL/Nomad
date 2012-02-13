@@ -44,6 +44,6 @@ namespace Nomad.Distributed.Communication
 		/// to send some user defined message with <see cref="IEventAggregator.PublishTimelyBuffered{T}"/>
 		/// </summary>		
 		[OperationContract]
-		void OnPublishTimelyBufferedDelivery(byte[] byteSteam, TypeDescriptor typeDescriptor,DateTime voidTime);
+		void OnPublishTimelyBufferedDelivery(byte[] byteStream, TypeDescriptor typeDescriptor,DateTime voidTime);
 	}
 }

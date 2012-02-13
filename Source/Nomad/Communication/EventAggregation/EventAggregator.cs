@@ -175,14 +175,8 @@ namespace Nomad.Communication.EventAggregation
 				tTypeBuffer.Add(newMessage);
 			}
 
-			// delivering current messages
-			foreach (var bufferedMessage in tTypeBuffer)
-			{
-				if (bufferedMessage.ExpiryTime > DateTime.Now)
-				{
-					Publish((T) bufferedMessage.Message);
-				}
-			}
+			// delivering current message
+			Publish((T) newMessage.Message);
 
 			// clearing outdate messages from the buffer
 			tTypeBuffer.RemoveAll(m => m.ExpiryTime <= DateTime.Now);
