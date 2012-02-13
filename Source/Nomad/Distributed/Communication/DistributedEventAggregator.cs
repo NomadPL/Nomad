@@ -112,33 +112,16 @@ namespace Nomad.Distributed.Communication
 			// at least in this implementation
 		}
 
-		public void OnPublish(byte[] byteStream, TypeDescriptor typeDescriptor)
+		public bool OnPublish(byte[] byteStream, TypeDescriptor typeDescriptor)
 		{
 			Loggger.Debug(string.Format("Acquired message of type {0}", typeDescriptor));
 
-			// TODO: this code should invoke one of the subsystems to be working good
 			try
 			{
 				// try recreating this type 
-				Type type = Type.GetType(typeDescriptor.QualifiedName);
-				if (type != null)
-				{
-					var nomadVersion = new Version(type.Assembly.GetName().Version);
-
-					if (!nomadVersion.Equals(typeDescriptor.Version))
-					{
-						throw new InvalidCastException("The version of the assembly does not match");
-					}
-				}
-
-				// try deserializing object
-				Object sendObject = MessageSerializer.Deserialize(byteStream);
-
-				// check if o is assignable
-				if (type != null && !type.IsInstanceOfType(sendObject))
-				{
-					throw new InvalidCastException("The sent object cannot be casted to sent type");
-				}
+				object sendObject;
+				Type type;
+				UnPackData(typeDescriptor, byteStream, out sendObject, out type);
 
 				// invoke this generic method with type t
 				// TODO: this is totaly not refactor aware use expression tree to get this publish thing
@@ -151,9 +134,36 @@ namespace Nomad.Distributed.Communication
 			{
 				Loggger.Warn("The type not be recreated", e);
 			}
+
+			// NOTE: this is the role of subsystem to answer 
+			return true;
+			 
 		}
 
-		public void OnPublishSingleDelivery(byte[] byteStream, TypeDescriptor typeDescriptor)
+		private void UnPackData(TypeDescriptor typeDescriptor, byte[] byteStream, out object sendObject, out Type type)
+		{
+			type = Type.GetType(typeDescriptor.QualifiedName);
+			if (type != null)
+			{
+				var nomadVersion = new Version(type.Assembly.GetName().Version);
+
+				if (!nomadVersion.Equals(typeDescriptor.Version))
+				{
+					throw new InvalidCastException("The version of the assembly does not match");
+				}
+			}
+
+			// try deserializing object
+			sendObject = MessageSerializer.Deserialize(byteStream);
+
+			// check if o is assignable
+			if (type != null && !type.IsInstanceOfType(sendObject))
+			{
+				throw new InvalidCastException("The sent object cannot be casted to sent type");
+			}
+		}
+
+		public bool OnPublishSingleDelivery(byte[] byteStream, TypeDescriptor typeDescriptor)
 		{
 			throw new NotImplementedException();
 		}

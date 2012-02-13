@@ -27,7 +27,7 @@ namespace Nomad.Distributed.Communication
 		///		Called by <see cref="ITopicDeliverySubsystem"/>.
 		/// </remarks>
 		[OperationContract]
-		void OnPublish(byte[] byteStream, TypeDescriptor typeDescriptor);
+		bool OnPublish(byte[] byteStream, TypeDescriptor typeDescriptor);
 
 		/// <summary>
 		///		Invoked by other <see cref="DistributedEventAggregator"/> especially <see cref="ISingleDeliverySubsystem"/>
@@ -35,8 +35,9 @@ namespace Nomad.Distributed.Communication
 		/// </summary>
 		/// <param name="byteStream"></param>
 		/// <param name="typeDescriptor"></param>
+		/// <returns>If deliver was successful (was somebody waiting for this message) then mark it true. Otherwise false.</returns>
 		[OperationContract]
-		void OnPublishSingleDelivery(byte[] byteStream, TypeDescriptor typeDescriptor);
+		bool OnPublishSingleDelivery(byte[] byteStream, TypeDescriptor typeDescriptor);
 
 		/// <summary>
 		///		Invoked by other <see cref="DistributedEventAggregator"/> instances (especially <see cref="ITimedDeliverySubsystem"/>
