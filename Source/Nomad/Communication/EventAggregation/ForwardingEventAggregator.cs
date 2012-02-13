@@ -63,18 +63,21 @@ namespace Nomad.Communication.EventAggregation
 			var delivered = true;
 			foreach (IEventAggregator eventAggregator in _eventAggregatorsToForwardTo)
 			{
-				eventAggregator.Publish(message);
+				var outcome = eventAggregator.Publish(message);
+				if (outcome == false)
+				{
 					delivered = false;
+				}
 			}
 			return delivered;
 		}
 
-		public bool Publish<T>(T message, DateTime validUntil) where T : class
+		public bool PublishSingle<T>(T message, DateTime validUntil) where T : class
 		{
 			throw new NotImplementedException();
 		}
 
-		public bool Publish<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class
+		public bool PublishTimed<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class
 		{
 			throw new NotImplementedException();
 		}

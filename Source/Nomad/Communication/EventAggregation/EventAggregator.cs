@@ -129,12 +129,12 @@ namespace Nomad.Communication.EventAggregation
     		return true;
         }
 
-    	public bool Publish<T>(T message, DateTime validUntil) where T : class
+    	public bool PublishSingle<T>(T message, DateTime validUntil) where T : class
     	{
     		throw new NotImplementedException();
     	}
 
-    	public bool Publish<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class
+    	public bool PublishTimed<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class
     	{
     		throw new NotImplementedException();
     	}
