@@ -3,6 +3,7 @@ using System.IO;
 using Nomad.Core;
 using Nomad.Distributed;
 using Nomad.Modules.Discovery;
+using Nomad.Tests.Data.Distributed.Commons;
 using Nomad.Tests.Data.Distributed.SingleDelivery;
 using Nomad.Utils.ManifestCreator;
 using Nomad.Utils.ManifestCreator.DependenciesProvider;
@@ -14,8 +15,6 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 	[FunctionalTests]
 	public class SingleDeliveryDistributedNomad : DistributedNomadBase
 	{
-		private string _sharedDll;
-
 		[SetUp]
 		public void set_up()
 		{
@@ -26,26 +25,19 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		public void kernel_published_once_only_one_module_revieved()
 		{
 			string listeningModuleSrc = GetSourceCodePath(typeof (SimpleListeningModule));
-			string sharedModuleSrc = GetSourceCodePath(typeof (DistributableMessage));
 		}
 
 		[Test]
 		public void module_published_once_only_one_module_recieved()
 		{
+			// path for this test (using the test method name) use in each code
+			PrepareSharedLibrary();
+
 			string publishingModuleSrc = GetSourceCodePath(typeof (SimplePublishingModule));
-
 			string listeningModuleSrc = GetSourceCodePath(typeof (SimpleListeningModule));
-			string sharedModuleSrc = GetSourceCodePath(typeof (DistributableMessage));
 
-			// path for this test (using the test method name)
-			string runtimePath = @"Modules\Distributed\" + GetCurrentMethodName();
-
-			Compiler.OutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, runtimePath);
-
-			_sharedDll = Compiler.GenerateModuleFromCode(sharedModuleSrc);
-
-			string listener1 = GenerateListener(runtimePath, _sharedDll, listeningModuleSrc, 1);
-			string listener2 = GenerateListener(runtimePath, _sharedDll, listeningModuleSrc, 2);
+			string listener1 = GenerateListener(_runtimePath, _sharedDll, listeningModuleSrc, 1);
+			string listener2 = GenerateListener(_runtimePath, _sharedDll, listeningModuleSrc, 2);
 
 			string publisherDll = Compiler.GenerateModuleFromCode(publishingModuleSrc, _sharedDll);
 			ManifestBuilderConfiguration manifestConfiguration = ManifestBuilderConfiguration.Default;
@@ -88,13 +80,11 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			IModuleDiscovery publisherDiscovery = GetDiscovery(publisherDll);
 			PublisherKernel.LoadModules(publisherDiscovery);
 
-			// load
 
-
-			// get the single delivery checking
+			// assert the events being published
 		}
 
-		private IModuleDiscovery GetDiscovery(string pathToDll)
+		private static IModuleDiscovery GetDiscovery(string pathToDll)
 		{
 			return new CompositeModuleDiscovery(new SingleModuleDiscovery(pathToDll));
 		}

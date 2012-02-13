@@ -39,7 +39,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Distributed\SingleDelivery\DistributableMessage.cs" />
+    <Compile Include="Distributed\Commons\DistributableMessage.cs" />
+    <Compile Include="Distributed\Commons\DistributedMessageCarrier.cs" />
+    <Compile Include="Distributed\Commons\DistributedMessageRegistry.cs" />
     <Compile Include="Distributed\SingleDelivery\SimpleListeningModule.cs" />
     <Compile Include="Distributed\SingleDelivery\SimplePublishingModule.cs" />
     <Compile Include="Distributed\Topic\DistributableMessage.cs" />
@@ -53,7 +55,9 @@
       <Name>Nomad</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Distributed\TimedDelivery\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -1,6 +1,6 @@
 using System;
 
-namespace Nomad.Tests.Data.Distributed.SingleDelivery
+namespace Nomad.Tests.Data.Distributed.Commons
 {
 	/// <summary>
 	///		Sample class with payload data inside

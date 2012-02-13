@@ -3,14 +3,37 @@ using System.Diagnostics;
 using System.IO;
 using Nomad.Core;
 using Nomad.KeysGenerator;
+using Nomad.Tests.Data.Distributed.Commons;
 using Nomad.Tests.FunctionalTests.Fixtures;
 using NUnit.Framework;
 using TestsShared.Utils;
 
 namespace Nomad.Tests.FunctionalTests.Distributed
 {
+	/// <summary>
+	///		Helper base class for all types of tests. 
+	/// 
+	/// <para>
+	/// Includes: 
+	/// <list type="bullet" | "number" | "table">
+	/// 
+	/// 
+	/// <item>
+	///		basic set up of <see cref="NomadKernel"/> instances
+	/// </item>
+	/// <item>
+	///		proper path transforming mechanisms
+	/// </item>	
+	/// <item>
+	///		Carrier for sending the information about messages
+	/// </item>
+	/// </list>
+	/// </para>
+	/// </summary>
 	public class DistributedNomadBase
 	{
+		private const string RUNTIME_LOCATION = @"Modules\Distributed\";
+
 		protected readonly ModuleCompiler Compiler = new ModuleCompiler();
 		protected NomadKernel ListenerKernel;
 		protected NomadKernel ListenerKernelSecond;
@@ -35,7 +58,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			{
 				File.Delete(KeyFile);
 			}
-			KeysGeneratorProgram.Main(new[] { KeyFile });
+			KeysGeneratorProgram.Main(new[] {KeyFile});
 		}
 
 		[TestFixtureTearDown]
@@ -45,7 +68,6 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			{
 				File.Delete(KeyFile);
 			}
-
 		}
 
 		[TearDown]
@@ -68,6 +90,8 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		}
 
 		protected String KeyFile;
+		protected string _sharedDll;
+		protected string _runtimePath;
 
 		protected String GetSourceCodePath(String codeLocation)
 		{
@@ -83,7 +107,15 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 
 		protected static String GetCurrentMethodName()
 		{
-			return new StackTrace().GetFrame(1).GetMethod().Name;
+			return new StackTrace().GetFrame(2).GetMethod().Name;
+		}
+
+		protected void PrepareSharedLibrary()
+		{
+			_runtimePath = RUNTIME_LOCATION + GetCurrentMethodName();
+			string sharedModuleSrc = GetSourceCodePath(typeof (DistributableMessage));
+			_sharedDll = Compiler.GenerateModuleFromCode(sharedModuleSrc);
+			Compiler.OutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _runtimePath);
 		}
 	}
 }

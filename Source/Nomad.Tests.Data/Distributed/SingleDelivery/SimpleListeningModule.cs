@@ -1,5 +1,6 @@
 using System.IO;
 using Nomad.Communication.EventAggregation;
+using Nomad.Tests.Data.Distributed.Commons;
 
 namespace Nomad.Tests.Data.Distributed.SingleDelivery
 {
