@@ -126,6 +126,7 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 			              		GenerateExecutable = false,
 			              		TreatWarningsAsErrors = false,
 			              		OutputAssembly = OutputName,
+								IncludeDebugInformation = true
 			              	};
 
 

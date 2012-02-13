@@ -1,5 +1,6 @@
 using Nomad.Communication.EventAggregation;
 using Nomad.Messages.Loading;
+using Nomad.Tests.Data.Distributed.Commons;
 
 namespace Nomad.Tests.Data.Distributed.Topic
 {

@@ -3,13 +3,12 @@ using System.IO;
 using Nomad.Core;
 using Nomad.Distributed;
 using Nomad.Modules.Discovery;
+using Nomad.Tests.Data.Distributed.Commons;
 using Nomad.Tests.Data.Distributed.Topic;
 using Nomad.Utils.ManifestCreator;
 using NUnit.Framework;
 using Nomad.Utils.ManifestCreator.DependenciesProvider;
 using TestsShared;
-using SimpleListeningModule = Nomad.Tests.Data.Distributed.SingleDelivery.SimpleListeningModule;
-using SimplePublishingModule = Nomad.Tests.Data.Distributed.SingleDelivery.SimplePublishingModule;
 
 namespace Nomad.Tests.FunctionalTests.Distributed
 {
@@ -49,7 +48,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			ListenerKernel = new NomadKernel(config1);
 			IModuleDiscovery listenerDiscovery = new SingleModuleDiscovery(listener1);
 			ListenerKernel.LoadModules(listenerDiscovery);
-			ListenerKernel.EventAggregator.Publish(new PathMessage(listener1));
+			ListenerKernel.EventAggregator.Publish(new PathMessage(Path.GetDirectoryName(listener1)));
 
 			// create publishing kernel
 			NomadConfiguration publisherConfig = NomadConfiguration.Default;
@@ -62,7 +61,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 
 
 			// assert the events being published
-			var fi = new FileInfo(Path.Combine(listener1,"CounterFile"));
+			var fi = new FileInfo(Path.Combine(Path.GetDirectoryName(listener1),"CounterFile"));
 			if (fi.Exists)
 			{
 				StreamReader counterReader = fi.OpenText();

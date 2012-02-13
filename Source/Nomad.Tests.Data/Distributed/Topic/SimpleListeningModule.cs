@@ -1,5 +1,6 @@
 using System.IO;
 using Nomad.Communication.EventAggregation;
+using Nomad.Tests.Data.Distributed.Commons;
 
 namespace Nomad.Tests.Data.Distributed.Topic
 {
@@ -20,8 +21,8 @@ namespace Nomad.Tests.Data.Distributed.Topic
 
 		public void OnLoad()
 		{
-			_eventAggregator.Subscribe<DistributableMessage>(CallBack);
 			_eventAggregator.Subscribe<PathMessage>(SetPath);
+			_eventAggregator.Subscribe<DistributableMessage>(CallBack);
 		}
 
 		private void SetPath(PathMessage obj)
