@@ -5,6 +5,9 @@ using System.ServiceModel;
 using log4net;
 using Nomad.Communication.EventAggregation;
 using Nomad.Core;
+using Nomad.Distributed.Communication.Deliveries.TopicDelivery;
+using Nomad.Distributed.Communication.Utils;
+using Nomad.Distributed.Installers;
 using Nomad.Messages;
 using Nomad.Messages.Distributed;
 using Version = Nomad.Utils.Version;
@@ -30,7 +33,10 @@ namespace Nomad.Distributed.Communication
 
 
 		private static readonly object LockObject = new object();
+		private readonly ITopicDeliverySubsystem _topicDelivery;
+
 		private IList<IDistributedEventAggregator> _deas;
+
 
 		/// <summary>
 		///     This constructor is needed by the <see cref="ServiceHost"/>.
@@ -42,9 +48,11 @@ namespace Nomad.Distributed.Communication
 		/// <summary>
 		///		This constructor is used by container during initalization. Used by <see cref="NomadDistributedEventAggregatorInstaller"/>
 		/// </summary>
-		/// <param name="localEventAggrgator"></param>
-		public DistributedEventAggregator(IEventAggregator localEventAggrgator)
+		/// <param name="localEventAggrgator">The local event aggregator used by </param>
+		///<param name="topicDelivery">The subsystem responsible for topic deliveries</param>
+		public DistributedEventAggregator(IEventAggregator localEventAggrgator, ITopicDeliverySubsystem topicDelivery)
 		{
+			_topicDelivery = topicDelivery;
 			LocalEventAggregator = localEventAggrgator;
 		}
 
@@ -108,7 +116,7 @@ namespace Nomad.Distributed.Communication
 		{
 			Loggger.Debug(string.Format("Acquired message of type {0}", typeDescriptor));
 
-
+			// TODO: this code should invoke one of the subsystems to be working good
 			try
 			{
 				// try recreating this type 
@@ -172,9 +180,20 @@ namespace Nomad.Distributed.Communication
 			{
 				return true;
 			}
+			
 			// try publishing message in the remote system
-			// TODO: Add return semantic.
-			SendToAll(message);
+			byte[] bytes = MessageSerializer.Serialize(message);
+			if (bytes == null)
+				return false;
+
+			var descriptor = new TypeDescriptor(message.GetType());
+
+			bool remoteDelivered = _topicDelivery.SentAll(RemoteDistributedEventAggregator, bytes, descriptor);
+			
+			if (remoteDelivered && delivered)
+			{
+				return true;
+			}
 
 			return delivered;
 		}
@@ -191,31 +210,9 @@ namespace Nomad.Distributed.Communication
 
 		#endregion
 
-		private void SendToAll<T>(T message)
-		{
-			byte[] bytes = MessageSerializer.Serialize(message);
-
-			if (bytes == null)
-				return;
-
-			var descriptor = new TypeDescriptor(message.GetType());
-
-			foreach (IDistributedEventAggregator dea in _deas)
-			{
-				try
-				{
-					dea.OnPublish(bytes, descriptor);
-				}
-				catch (Exception e)
-				{
-					Loggger.Warn(string.Format("Could not sent message '{0}' to DEA: {1}", message, dea), e);
-					throw;
-				}
-			}
-		}
-
 		/// <summary>
-		///		Sends the message using control type of invocation.
+		///		Sends the message using control type of invocation. This code works
+		/// for now perfectly fine.
 		/// </summary>
 		private void SendToAllControl<T>(T message)
 		{

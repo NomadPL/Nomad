@@ -111,7 +111,12 @@
     <Compile Include="Communication\EventAggregation\TicketDisposedArgs.cs" />
     <Compile Include="Communication\EventAggregation\WpfGuiThreadProvider.cs" />
     <Compile Include="Core\NomadConstants.cs" />
-    <Compile Include="Distributed\Communication\MessageSerializer.cs" />
+    <Compile Include="Distributed\Communication\Deliveries\IDeliverySubsystem.cs" />
+    <Compile Include="Distributed\Communication\Deliveries\SingleDelivery\ISingleDeliverySubsystem.cs" />
+    <Compile Include="Distributed\Communication\Deliveries\TimedDelivery\ITimedDeliverySubsystem.cs" />
+    <Compile Include="Distributed\Communication\Deliveries\TopicDelivery\BasicTopicDeliverySubsystem.cs" />
+    <Compile Include="Distributed\Communication\Deliveries\TopicDelivery\ITopicDeliverySubsystem.cs" />
+    <Compile Include="Distributed\Communication\Utils\MessageSerializer.cs" />
     <Compile Include="Distributed\Communication\Resolvers\IResolver.cs" />
     <Compile Include="Distributed\Communication\Resolvers\ResolverBase.cs" />
     <Compile Include="Distributed\Communication\Resolvers\ResolverFactory.cs" />
@@ -158,7 +163,7 @@
     <Compile Include="Modules\Manifest\ModuleDependency.cs" />
     <Compile Include="Modules\Manifest\ModuleManifestFactory.cs" />
     <Compile Include="Modules\Installers\NomadEventAggregatorInstaller.cs" />
-    <Compile Include="Distributed\NomadDistributedEventAggregatorInstaller.cs" />
+    <Compile Include="Distributed\Installers\NomadDistributedEventAggregatorInstaller.cs" />
     <Compile Include="Regions\Adapters\ItemsControlAdapter.cs" />
     <Compile Include="Regions\Adapters\MultipleActiveViewRegion.cs" />
     <Compile Include="Regions\Adapters\StatusBarAdapter.cs" />

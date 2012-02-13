@@ -10,6 +10,7 @@ using Nomad.Core;
 using Nomad.Distributed;
 using Nomad.Distributed.Communication;
 using Nomad.Distributed.Communication.Resolvers;
+using Nomad.Distributed.Installers;
 using Nomad.Modules.Installers;
 using Nomad.Utils;
 

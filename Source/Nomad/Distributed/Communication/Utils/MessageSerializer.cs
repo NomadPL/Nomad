@@ -5,7 +5,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using log4net;
 using Nomad.Core;
 
-namespace Nomad.Distributed.Communication
+namespace Nomad.Distributed.Communication.Utils
 {
 	/// <summary>
 	///		Helper class for performing serialization and deserialization
