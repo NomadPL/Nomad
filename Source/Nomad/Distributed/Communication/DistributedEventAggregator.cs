@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Reflection;
 using System.ServiceModel;
 using log4net;
 using Nomad.Communication.EventAggregation;
@@ -19,13 +17,12 @@ namespace Nomad.Distributed.Communication
 	/// </summary>
 	/// <remarks>
 	///     This class is visible to the modules loaded to Nomad as simple <see cref="IEventAggregator"/>. 
+	/// This class uses various subsystems for dispatching the proper behaviour during the publishing new messages.
+	/// TODO: write about the subsystems
 	/// </remarks>
 	public class DistributedEventAggregator : MarshalByRefObject,
 	                                          IEventAggregator, IDistributedEventAggregator, IDisposable
 	{
-		// TODO: make this value injectable ?
-		private const int MESSAGE_SIZE = 2048;
-
 		private static readonly ILog Loggger = LogManager.GetLogger(NomadConstants.NOMAD_LOGGER_REPOSITORY,
 		                                                            typeof (DistributedEventAggregator));
 
@@ -127,7 +124,7 @@ namespace Nomad.Distributed.Communication
 				}
 
 				// try deserializing object
-				Object sendObject = Deserialize(byteStream);
+				Object sendObject = MessageSerializer.Deserialize(byteStream);
 
 				// check if o is assignable
 				if (type != null && !type.IsInstanceOfType(sendObject))
@@ -137,8 +134,8 @@ namespace Nomad.Distributed.Communication
 
 				// invoke this generic method with type t
 				// TODO: this is totaly not refactor aware use expression tree to get this publish thing
-				var methodInfo = LocalEventAggregator.GetType().GetMethod("Publish");
-				var goodMethodInfo = methodInfo.MakeGenericMethod(type);
+				MethodInfo methodInfo = LocalEventAggregator.GetType().GetMethod("Publish");
+				MethodInfo goodMethodInfo = methodInfo.MakeGenericMethod(type);
 
 				goodMethodInfo.Invoke(LocalEventAggregator, new[] {sendObject});
 			}
@@ -194,59 +191,10 @@ namespace Nomad.Distributed.Communication
 
 		#endregion
 
-		private object Deserialize(byte[] bytes)
-		{
-			using (var stream = new MemoryStream(bytes))
-			{
-				try
-				{
-					IFormatter formatter = new BinaryFormatter();
-					return formatter.Deserialize(stream);
-				}
-				catch (Exception e)
-				{
-					Loggger.Warn("DeSerialization warning: ", e);
-					throw;
-				}
-			}
-		}
-
-		private byte[] Serialize(Object obj)
-		{
-			MemoryStream stream = null;
-			byte[] bytes;
-			try
-			{
-				IFormatter formatter = new BinaryFormatter();
-				stream = new MemoryStream();
-				formatter.Serialize(stream, obj);
-
-				if (stream.Length > MESSAGE_SIZE)
-				{
-					throw new InvalidOperationException("Object is to large for serialization");
-				}
-
-				bytes = stream.ToArray();
-			}
-			catch (Exception e)
-			{
-				Loggger.Warn("Serialization warning: ", e);
-
-				// further sending is not possible
-				return null;
-			}
-			finally
-			{
-				if (null != stream)
-					stream.Close();
-			}
-
-			return bytes;
-		}
-
 		private void SendToAll<T>(T message)
 		{
-			byte[] bytes = Serialize(message);
+			byte[] bytes = MessageSerializer.Serialize(message);
+
 			if (bytes == null)
 				return;
 
