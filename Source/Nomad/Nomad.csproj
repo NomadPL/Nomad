@@ -107,6 +107,7 @@
     <Compile Include="Communication\EventAggregation\IGuiThreadProvider.cs" />
     <Compile Include="Communication\EventAggregation\LazyWpfGuiThreadProvider.cs" />
     <Compile Include="Communication\EventAggregation\NullGuiThreadProvider.cs" />
+    <Compile Include="Communication\EventAggregation\SingleDeliverySemantic.cs" />
     <Compile Include="Communication\EventAggregation\TicketDisposedArgs.cs" />
     <Compile Include="Communication\EventAggregation\WpfGuiThreadProvider.cs" />
     <Compile Include="Core\NomadConstants.cs" />

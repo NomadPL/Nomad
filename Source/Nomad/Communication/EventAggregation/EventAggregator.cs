@@ -97,13 +97,13 @@ namespace Nomad.Communication.EventAggregation
         }
 
 
-        /// <summary>
-        /// Notifies event listeners. Thread safe.
-        /// <see cref="IEventAggregator.Publish{T}"/>
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="message"></param>
-        public void Publish<T>(T message) where T : class
+    	/// <summary>
+    	/// Notifies event listeners. Thread safe.
+    	/// <see cref="IEventAggregator.Publish{T}"/>
+    	/// </summary>
+    	/// <typeparam name="T"></typeparam>
+    	/// <param name="message"></param>
+    	public bool Publish<T>(T message) where T : class
         {
             Type type = typeof (T);
             HashSet<IEventAggregatorTicket> tickets;
@@ -114,7 +114,7 @@ namespace Nomad.Communication.EventAggregation
 
             //prevention from throwing exception
             if (tickets == null)
-                return;
+                return false;
 
             List<IEventAggregatorTicket> ticketsList;
             lock (tickets)
@@ -126,10 +126,21 @@ namespace Nomad.Communication.EventAggregation
             {
                 ticket.Execute(message);
             }
+    		return true;
         }
 
+    	public bool Publish<T>(T message, DateTime validUntil) where T : class
+    	{
+    		throw new NotImplementedException();
+    	}
 
-        private void TicketDisposed(object sender, TicketDisposedArgs e)
+    	public bool Publish<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class
+    	{
+    		throw new NotImplementedException();
+    	}
+
+
+    	private void TicketDisposed(object sender, TicketDisposedArgs e)
         {
             var ticket = sender as IEventAggregatorTicket;
             ticket.TicketDisposed -= TicketDisposed;

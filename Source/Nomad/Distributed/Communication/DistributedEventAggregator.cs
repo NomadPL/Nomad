@@ -25,8 +25,9 @@ namespace Nomad.Distributed.Communication
 	{
 		// TODO: make this value injectable ?
 		private const int MESSAGE_SIZE = 2048;
+
 		private static readonly ILog Loggger = LogManager.GetLogger(NomadConstants.NOMAD_LOGGER_REPOSITORY,
-			typeof (DistributedEventAggregator));
+		                                                            typeof (DistributedEventAggregator));
 
 		private static IEventAggregator _localEventAggregator;
 
@@ -87,7 +88,7 @@ namespace Nomad.Distributed.Communication
 			catch (Exception e)
 			{
 				// NOTE: the exception must be eaten -> the cleanup show must go on
-				Loggger.Error("There was serious error during the cleanup phase",e);
+				Loggger.Error("There was serious error during the cleanup phase", e);
 			}
 		}
 
@@ -127,7 +128,7 @@ namespace Nomad.Distributed.Communication
 
 				// try deserializing object
 				Object sendObject = Deserialize(byteStream);
-				
+
 				// check if o is assignable
 				if (type != null && !type.IsInstanceOfType(sendObject))
 				{
@@ -139,14 +140,12 @@ namespace Nomad.Distributed.Communication
 				var methodInfo = LocalEventAggregator.GetType().GetMethod("Publish");
 				var goodMethodInfo = methodInfo.MakeGenericMethod(type);
 
-				goodMethodInfo.Invoke(LocalEventAggregator, new[]{sendObject});
+				goodMethodInfo.Invoke(LocalEventAggregator, new[] {sendObject});
 			}
 			catch (Exception e)
 			{
 				Loggger.Warn("The type not be recreated", e);
 			}
-
-			
 		}
 
 		#endregion
@@ -166,18 +165,31 @@ namespace Nomad.Distributed.Communication
 			// subscribe on remote or not by now
 		}
 
-		public void Publish<T>(T message) where T : class
+		public bool Publish<T>(T message) where T : class
 		{
 			// try publishing message in the local system on this machine
-			_localEventAggregator.Publish(message);
+			bool delivered = _localEventAggregator.Publish(message);
 
 			// filter local NomadMessage
 			if (message is NomadMessage)
 			{
-				return;
+				return true;
 			}
 			// try publishing message in the remote system
+			// TODO: Add return semantic.
 			SendToAll(message);
+
+			return delivered;
+		}
+
+		public bool Publish<T>(T message, DateTime validUntil) where T : class
+		{
+			throw new NotImplementedException();
+		}
+
+		public bool Publish<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class
+		{
+			throw new NotImplementedException();
 		}
 
 		#endregion
