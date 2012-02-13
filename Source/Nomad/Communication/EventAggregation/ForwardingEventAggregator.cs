@@ -72,7 +72,7 @@ namespace Nomad.Communication.EventAggregation
 			return delivered;
 		}
 
-		public bool PublishTimelyBuffered<T>(T message, DateTime validUntil) where T : class
+		public void PublishTimelyBuffered<T>(T message, DateTime validUntil) where T : class
 		{
 			throw new NotImplementedException();
 		}
