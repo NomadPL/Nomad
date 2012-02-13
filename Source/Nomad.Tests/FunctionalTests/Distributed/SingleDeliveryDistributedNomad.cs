@@ -21,13 +21,14 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		}
 
 		[Test]
-		public void kernel_published_once_only_one_module_revieved()
+		public void local_module_published_once_one_module_revieved()
 		{
-			string listeningModuleSrc = GetSourceCodePath(typeof (SDListeningModule));
+			PrepareSharedLibrary();
+
+
 		}
 
 		[Test]
-		[Ignore("Work in progress")]
 		public void module_published_once_only_one_module_recieved()
 		{
 			// path for this test (using the test method name) use in each code
