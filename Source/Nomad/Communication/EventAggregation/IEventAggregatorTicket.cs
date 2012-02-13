@@ -45,7 +45,7 @@ namespace Nomad.Communication.EventAggregation
         /// Executes action of the ticket passing payload.
         ///</summary>
         /// <remarks>
-        /// Payload has to be proper type. Otherwise <see cref="ArgumentException"/> will be throwns
+        /// Payload has to be proper type. Otherwise <see cref="ArgumentException"/> will be thrown
         /// </remarks>
         ///<param name="payload">payload to pass to listeners</param>
         /// <exception cref="ArgumentException">when payload is not the proper type</exception>
