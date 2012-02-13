@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using Nomad.Communication.EventAggregation;
 using Nomad.Tests.Data.Distributed.Commons;
@@ -21,15 +22,11 @@ namespace Nomad.Tests.Data.Distributed.Topic
 
 		public void OnLoad()
 		{
-			_eventAggregator.Subscribe<PathMessage>(SetPath);
 			_eventAggregator.Subscribe<DistributableMessage>(CallBack);
-		}
-
-		private void SetPath(PathMessage obj)
-		{
-			_fileInfo = new FileInfo(Path.Combine(obj.Payload, "CounterFile"));
+			_fileInfo = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CounterFile"));
 			_fileInfo.Delete();
 		}
+
 
 		private void CallBack(DistributableMessage obj)
 		{
