@@ -58,7 +58,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			config1.DistributedConfiguration.URLs.Add(site2);
 			config1.DistributedConfiguration.URLs.Add(publisherSite);
 			ListenerKernel = new NomadKernel(config1);
-			IModuleDiscovery listnerDiscovery = GetDiscovery(listener1);
+			IModuleDiscovery listnerDiscovery = new SingleModuleDiscovery(listener1);
 			ListenerKernel.LoadModules(listnerDiscovery);
 
 			NomadConfiguration config2 = NomadConfiguration.Default;
@@ -67,7 +67,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			config2.DistributedConfiguration.URLs.Add(site1);
 			config2.DistributedConfiguration.URLs.Add(publisherSite);
 			ListenerKernelSecond = new NomadKernel(config2);
-			IModuleDiscovery listenerDiscovery2 = GetDiscovery(listener2);
+			IModuleDiscovery listenerDiscovery2 = new SingleModuleDiscovery(listener2);
 			ListenerKernelSecond.LoadModules(listenerDiscovery2);
 
 			// create publishing kernel
@@ -77,27 +77,11 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			publisherConfig.DistributedConfiguration.URLs.Add(site1);
 			publisherConfig.DistributedConfiguration.URLs.Add(site2);
 			PublisherKernel = new NomadKernel(publisherConfig);
-			IModuleDiscovery publisherDiscovery = GetDiscovery(publisherDll);
+			IModuleDiscovery publisherDiscovery = new SingleModuleDiscovery(publisherDll);
 			PublisherKernel.LoadModules(publisherDiscovery);
 
 
 			// assert the events being published
-		}
-
-		private static IModuleDiscovery GetDiscovery(string pathToDll)
-		{
-			return new CompositeModuleDiscovery(new SingleModuleDiscovery(pathToDll));
-		}
-
-		private string GenerateListener(string runtimePath, string sharedDll, string listeningModuleSrc, int counter)
-		{
-			Compiler.OutputName = Path.Combine(runtimePath, "listener" + counter + ".dll");
-			string listenerDll = Compiler.GenerateModuleFromCode(listeningModuleSrc, sharedDll);
-			ManifestBuilderConfiguration manifestConfiguration = ManifestBuilderConfiguration.Default;
-			manifestConfiguration.ModulesDependenciesProvider = new SingleModulesDependencyProvider();
-			Compiler.GenerateManifestForModule(listenerDll, KeyFile, manifestConfiguration);
-
-			return listenerDll;
 		}
 	}
 }

@@ -20,4 +20,14 @@ namespace Nomad.Tests.Data.Distributed.Topic
 			get { return _payload; }
 		}
 	}
+
+	/// <summary>
+	/// Used to set CounterFile path for listener module.
+	/// </summary>
+	public class PathMessage : DistributableMessage
+	{
+		public PathMessage(string payload) : base(payload)
+		{
+		}
+	}
 }

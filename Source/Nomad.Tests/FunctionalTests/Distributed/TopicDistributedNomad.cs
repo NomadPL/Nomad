@@ -6,7 +6,10 @@ using Nomad.Modules.Discovery;
 using Nomad.Tests.Data.Distributed.Topic;
 using Nomad.Utils.ManifestCreator;
 using NUnit.Framework;
+using Nomad.Utils.ManifestCreator.DependenciesProvider;
 using TestsShared;
+using SimpleListeningModule = Nomad.Tests.Data.Distributed.SingleDelivery.SimpleListeningModule;
+using SimplePublishingModule = Nomad.Tests.Data.Distributed.SingleDelivery.SimplePublishingModule;
 
 namespace Nomad.Tests.FunctionalTests.Distributed
 {
@@ -19,63 +22,47 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		[Test]
 		public void module_publishes_module_listens()
 		{
-			// we are using the elements from this namespace
-			SetSourceFolder(typeof (DistributableMessage));
 
-			// TODO: this code is not refactor aware
-			string sharedModuleSourcePath = GetSourceCodePath(@"DistributableMessage.cs");
-			string publisherModuleSourcePath = GetSourceCodePath(@"SimplePublishingModule.cs");
-			string listenerModuleSourcePath = GetSourceCodePath(@"SimpleListeningModule.cs");
+			// path for this test (using the test method name) use in each code
+			PrepareSharedLibrary();
 
-			const string sharedPath = @"Modules\Distributed\Shared\";
-			const string publisherPath = @"Modules\Distributed\Publisher\";
-			const string listenerPath = @"Modules\Distributed\Listener\";
+			string publishingModuleSrc = GetSourceCodePath(typeof(SimplePublishingModule));
+			string listeningModuleSrc = GetSourceCodePath(typeof(SimpleListeningModule));
 
-			// shared module generation
-			Compiler.OutputDirectory = sharedPath;
-			Compiler.GenerateModuleFromCode(sharedModuleSourcePath);
+			string listener1 = GenerateListener(_runtimePath, _sharedDll, listeningModuleSrc, 1);
 
+			string publisherDll = Compiler.GenerateModuleFromCode(publishingModuleSrc, _sharedDll);
+			ManifestBuilderConfiguration manifestConfiguration = ManifestBuilderConfiguration.Default;
+			manifestConfiguration.ModulesDependenciesProvider = new SingleModulesDependencyProvider();
+			Compiler.GenerateManifestForModule(publisherDll, KeyFile, manifestConfiguration);
 
-			// listener module generation
-			Compiler.OutputDirectory = listenerPath;
-			File.Copy(sharedPath + "DistributableMessage.dll", Path.Combine(listenerPath, "DistributableMessage.dll"), true);
-			Compiler.GenerateModuleFromCode(listenerModuleSourcePath, sharedPath + "DistributableMessage.dll");
-			var builder = new ManifestBuilder(@"TEST_ISSUER",
-											  KeyFile,
-			                                  @"SimpleListeningModule.dll",
-			                                  listenerPath);
-			builder.CreateAndPublish();
+			// create listener site
+			string listenerSite = "net.tcp://127.0.0.1:5555/IDEA";
 
-			// publisher module generation
-			Compiler.OutputDirectory = publisherPath;
-			File.Copy(sharedPath + "DistributableMessage.dll", Path.Combine(publisherPath, "DistributableMessage.dll"), true);
-			Compiler.GenerateModuleFromCode(publisherModuleSourcePath, sharedPath + "DistributableMessage.dll");
-			builder = new ManifestBuilder(@"TEST_ISSUER",
-			                              KeyFile,
-			                              @"SimplePublishingModule.dll",
-			                              publisherPath);
-			builder.CreateAndPublish();
+			// create published sites
+			string publisherSite = "net.tcp://127.0.0.1:7777/IDEA";
 
-			// creating listener module kernel
-			string site1 = "net.tcp://127.0.0.1:5555/IDEA";
-			NomadConfiguration config = NomadConfiguration.Default;
-			config.DistributedConfiguration = DistributedConfiguration.Default;
-			config.DistributedConfiguration.LocalURI = new Uri(site1);
-			ListenerKernel = new NomadKernel(config);
-			var listenerDiscovery = new DirectoryModuleDiscovery(listenerPath, SearchOption.TopDirectoryOnly);
+			// create kernels with configuration
+			NomadConfiguration config1 = NomadConfiguration.Default;
+			config1.DistributedConfiguration = DistributedConfiguration.Default;
+			config1.DistributedConfiguration.LocalURI = new Uri(listenerSite);
+			ListenerKernel = new NomadKernel(config1);
+			IModuleDiscovery listenerDiscovery = new SingleModuleDiscovery(listener1);
 			ListenerKernel.LoadModules(listenerDiscovery);
+			ListenerKernel.EventAggregator.Publish(new PathMessage(listener1));
 
-			// creating publisher module kernel
-			string site2 = "net.tcp://127.0.0.1:6666/IDEA";
-			NomadConfiguration config2 = NomadConfiguration.Default;
-			config2.DistributedConfiguration = DistributedConfiguration.Default;
-			config2.DistributedConfiguration.LocalURI = new Uri(site2);
-			config2.DistributedConfiguration.URLs.Add(site1);
-			PublisherKernel = new NomadKernel(config2);
-			var publisherDiscovery = new DirectoryModuleDiscovery(publisherPath, SearchOption.TopDirectoryOnly);
+			// create publishing kernel
+			NomadConfiguration publisherConfig = NomadConfiguration.Default;
+			publisherConfig.DistributedConfiguration = DistributedConfiguration.Default;
+			publisherConfig.DistributedConfiguration.LocalURI = new Uri(publisherSite);
+			publisherConfig.DistributedConfiguration.URLs.Add(listenerSite);
+			PublisherKernel = new NomadKernel(publisherConfig);
+			IModuleDiscovery publisherDiscovery = new SingleModuleDiscovery(publisherDll);
 			PublisherKernel.LoadModules(publisherDiscovery);
 
-			var fi = new FileInfo(@"Modules\Distributed\Listener\CounterFile");
+
+			// assert the events being published
+			var fi = new FileInfo(Path.Combine(listener1,"CounterFile"));
 			if (fi.Exists)
 			{
 				StreamReader counterReader = fi.OpenText();

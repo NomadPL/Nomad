@@ -6,6 +6,8 @@ using Nomad.KeysGenerator;
 using Nomad.Tests.Data.Distributed.Commons;
 using Nomad.Tests.FunctionalTests.Fixtures;
 using NUnit.Framework;
+using Nomad.Utils.ManifestCreator;
+using Nomad.Utils.ManifestCreator.DependenciesProvider;
 using TestsShared.Utils;
 
 namespace Nomad.Tests.FunctionalTests.Distributed
@@ -116,6 +118,17 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			string sharedModuleSrc = GetSourceCodePath(typeof (DistributableMessage));
 			_sharedDll = Compiler.GenerateModuleFromCode(sharedModuleSrc);
 			Compiler.OutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _runtimePath);
+		}
+
+		protected string GenerateListener(string runtimePath, string sharedDll, string listeningModuleSrc, int counter)
+		{
+			Compiler.OutputName = Path.Combine(runtimePath, "listener" + counter + ".dll");
+			string listenerDll = Compiler.GenerateModuleFromCode(listeningModuleSrc, sharedDll);
+			ManifestBuilderConfiguration manifestConfiguration = ManifestBuilderConfiguration.Default;
+			manifestConfiguration.ModulesDependenciesProvider = new SingleModulesDependencyProvider();
+			Compiler.GenerateManifestForModule(listenerDll, KeyFile, manifestConfiguration);
+
+			return listenerDll;
 		}
 	}
 }

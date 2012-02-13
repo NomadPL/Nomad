@@ -10,18 +10,24 @@ namespace Nomad.Tests.Data.Distributed.Topic
 	{
 		private readonly IEventAggregator _eventAggregator;
 		private int _counter;
-		private FileInfo _fileInfo = new FileInfo(@"Modules\Distributed\Listener\CounterFile");
+		private FileInfo _fileInfo;
 
 		public SimpleListeningModule(IEventAggregator eventAggregator)
 		{
 			_counter = 0;
 			_eventAggregator = eventAggregator;
-			_fileInfo.Delete();
 		}
 
 		public void OnLoad()
 		{
 			_eventAggregator.Subscribe<DistributableMessage>(CallBack);
+			_eventAggregator.Subscribe<PathMessage>(SetPath);
+		}
+
+		private void SetPath(PathMessage obj)
+		{
+			_fileInfo = new FileInfo(Path.Combine(obj.Payload, "CounterFile"));
+			_fileInfo.Delete();
 		}
 
 		private void CallBack(DistributableMessage obj)
