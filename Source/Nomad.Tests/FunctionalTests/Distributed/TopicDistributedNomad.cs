@@ -48,7 +48,6 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			ListenerKernel = new NomadKernel(config1);
 			IModuleDiscovery listenerDiscovery = new SingleModuleDiscovery(listener1);
 			ListenerKernel.LoadModules(listenerDiscovery);
-			ListenerKernel.EventAggregator.Publish(new PathMessage(Path.GetDirectoryName(listener1)));
 
 			// create publishing kernel
 			NomadConfiguration publisherConfig = NomadConfiguration.Default;
@@ -60,8 +59,8 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			PublisherKernel.LoadModules(publisherDiscovery);
 
 
-			// assert the events being published
-			var fi = new FileInfo(Path.Combine(Path.GetDirectoryName(listener1),"CounterFile"));
+			// assert the events being published	
+			var fi = new FileInfo(listener1 +"_CounterFile");
 			if (fi.Exists)
 			{
 				StreamReader counterReader = fi.OpenText();

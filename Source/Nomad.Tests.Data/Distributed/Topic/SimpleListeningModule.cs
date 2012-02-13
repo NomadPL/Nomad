@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Reflection;
 using Nomad.Communication.EventAggregation;
 using Nomad.Tests.Data.Distributed.Commons;
 
@@ -23,7 +24,7 @@ namespace Nomad.Tests.Data.Distributed.Topic
 		public void OnLoad()
 		{
 			_eventAggregator.Subscribe<DistributableMessage>(CallBack);
-			_fileInfo = new FileInfo(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CounterFile"));
+			_fileInfo = new FileInfo(Assembly.GetExecutingAssembly().Location+"_CounterFile");
 			_fileInfo.Delete();
 		}
 

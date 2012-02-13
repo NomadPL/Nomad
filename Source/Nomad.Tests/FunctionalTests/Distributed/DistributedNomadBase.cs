@@ -131,8 +131,8 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 
 			string sharedModuleSrc = GetSourceCodePath(typeof (DistributableMessage));
 			string sharedRegistry = GetSourceCodePath(typeof (DistributedMessageRegistry));
-			_sharedDll = Compiler.GenerateModuleFromCode(new[] {sharedModuleSrc,sharedRegistry});
 			Compiler.OutputDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, _runtimePath);
+			_sharedDll = Compiler.GenerateModuleFromCode(new[] {sharedModuleSrc,sharedRegistry});
 		}
 
 		protected string GenerateListener(string runtimePath, string sharedDll, string listeningModuleSrc, int counter)
