@@ -21,10 +21,10 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 	public class ModuleCompiler
 	{
 		private static readonly string NomadAssembly = AppDomain.CurrentDomain.BaseDirectory +
-													  @"\Nomad.dll";
+		                                               @"\Nomad.dll";
 
 		private static readonly string NomadTestAssembly = AppDomain.CurrentDomain.BaseDirectory +
-														  @"\Nomad.Tests.dll";
+		                                                   @"\Nomad.Tests.dll";
 
 		private readonly CodeDomProvider _provider;
 		private string _outputDirectory;
@@ -72,7 +72,7 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 		{
 			get { return @"..\Source\Nomad.Tests\FunctionalTests\Data\SimplestModulePossible1.cs"; }
 		}
-		
+
 		/// <summary>
 		///     Gets the alternative path. Thus SimplestModulePossible2.
 		/// </summary>
@@ -100,32 +100,41 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 		/// <param name="dependeciesAssembliesPath">Array of the dependecies (assemblies) to be the following assembly dependent on.</param>
 		/// <returns>The path to the compiled assembly.</returns>
 		public string GenerateModuleFromCode(string sourceFilePath,
-											 params string[] dependeciesAssembliesPath)
+		                                     params string[] dependeciesAssembliesPath)
+		{
+			return GenerateModuleFromCode(new[] {sourceFilePath}, dependeciesAssembliesPath);
+		}
+
+		public string GenerateModuleFromCode(string[] sourceFilesPath, params string[] dependeciesAssembliesPath)
 		{
 			IEnumerable<string> asmReferences =
 				dependeciesAssembliesPath.ToList().Concat(new List<string>
-															  {
-																  NomadAssembly,
-																  NomadTestAssembly
-															  });
-			if(string.IsNullOrEmpty(OutputName))
+				                                          	{
+				                                          		NomadAssembly,
+				                                          		NomadTestAssembly
+				                                          	});
+			if (string.IsNullOrEmpty(OutputName))
+			{
+				// the name is the first element
 				OutputName = Path.Combine(OutputDirectory,
-						 Path.GetFileNameWithoutExtension(
-							 sourceFilePath) + ".dll");
+				                          Path.GetFileNameWithoutExtension(sourceFilesPath[0]) + ".dll");
+			}
+
 
 			_parameters = new CompilerParameters(asmReferences.ToArray())
-							  {
-								  GenerateExecutable = false,
-								  TreatWarningsAsErrors = false,
-								  OutputAssembly = OutputName,
-							  };
+			              	{
+			              		GenerateExecutable = false,
+			              		TreatWarningsAsErrors = false,
+			              		OutputAssembly = OutputName,
+			              	};
 
-			string srcPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, sourceFilePath);
-			_results = _provider.CompileAssemblyFromFile(_parameters, srcPath);
+
+			string[] srcPaths = sourceFilesPath.Select(x => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, x)).ToArray();
+			_results = _provider.CompileAssemblyFromFile(_parameters, srcPaths);
 
 			if (_results.Errors.Count > 0)
 			{
-				foreach (CompilerError  error in _results.Errors)
+				foreach (CompilerError error in _results.Errors)
 				{
 					Console.WriteLine(error);
 				}
@@ -137,6 +146,7 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 			return _parameters.OutputAssembly;
 		}
 
+
 		/// <summary>
 		///     Wrapps the generating manifest with values that should be provided. Provides access to <paramref name="configuration"/>.
 		/// </summary>
@@ -144,12 +154,14 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 		/// <param name="keyLocation"></param>
 		/// <param name="configuration"></param>
 		/// <returns></returns>
-		public string GenerateManifestForModule(string modulePath, string keyLocation,ManifestBuilderConfiguration configuration)
+		public string GenerateManifestForModule(string modulePath, string keyLocation,
+		                                        ManifestBuilderConfiguration configuration)
 		{
 			string directory = Path.GetFullPath(Path.GetDirectoryName(modulePath));
 			var builder = new ManifestBuilder("TEST_ISSUER_COMPILER",
-											  keyLocation,
-											  Path.GetFileName(modulePath), directory,KeyStorage.Nomad,string.Empty,configuration);
+			                                  keyLocation,
+			                                  Path.GetFileName(modulePath), directory, KeyStorage.Nomad, string.Empty,
+			                                  configuration);
 			builder.CreateAndPublish();
 
 			return modulePath + ModuleManifest.ManifestFileNameSuffix;
@@ -158,7 +170,7 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 		/// <summary>
 		///		Generate manifest for module.
 		/// </summary>
-		public string GenerateManifestForModule(string modulePath,string keyLocation)
+		public string GenerateManifestForModule(string modulePath, string keyLocation)
 		{
 			return GenerateManifestForModule(modulePath, keyLocation, ManifestBuilderConfiguration.Default);
 		}
@@ -167,11 +179,11 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 		///		Wrapps up the generating manifest. Uses <see cref="WholeDirectoryModulesDependenciesProvider"/> with
 		/// the <see cref="ManifestBuilderConfiguration"/> file.
 		/// </summary>
-		public string  SetUpModuleWithManifest(string outputDirectory, string srcPath,
-											   params string[] references)
+		public string SetUpModuleWithManifest(string outputDirectory, string srcPath,
+		                                      params string[] references)
 		{
 			// NOTE: we are using whole directory module discovery instead of file one
-			var configuration = ManifestBuilderConfiguration.Default;
+			ManifestBuilderConfiguration configuration = ManifestBuilderConfiguration.Default;
 			configuration.ModulesDependenciesProvider = new WholeDirectoryModulesDependenciesProvider();
 
 			return SetUpModuleWithManifest(outputDirectory, srcPath, configuration, references);
@@ -187,8 +199,9 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 		///<returns>
 		///		The path to the generated manifest
 		/// </returns>
-		public string SetUpModuleWithManifest(string outputDirectory, string srcPath, ManifestBuilderConfiguration configuration,
-											   params string[] references)
+		public string SetUpModuleWithManifest(string outputDirectory, string srcPath,
+		                                      ManifestBuilderConfiguration configuration,
+		                                      params string[] references)
 		{
 			OutputDirectory = outputDirectory;
 
@@ -205,10 +218,10 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 			{
 				File.Delete(KeyFile);
 			}
-			KeysGeneratorProgram.Main(new[] { KeyFile });
+			KeysGeneratorProgram.Main(new[] {KeyFile});
 
 			// manifest generating is for folder
-			var file = GenerateManifestForModule(modulePath, KeyFile, configuration);
+			string file = GenerateManifestForModule(modulePath, KeyFile, configuration);
 
 			if (File.Exists(KeyFile))
 			{
