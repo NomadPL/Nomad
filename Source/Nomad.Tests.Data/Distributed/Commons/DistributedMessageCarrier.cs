@@ -9,16 +9,9 @@ namespace Nomad.Tests.Data.Distributed.Commons
 	/// </summary>
 	public class DistributedMessageCarrier : MarshalByRefObject
 	{
-		private readonly IList<string> _list;
-
-		public DistributedMessageCarrier()
-		{
-			_list = DistributedMessageRegistry.Messages;
-		}
-
 		public IList<string> GetStatus
 		{
-			get { return _list; }
+			get { return DistributedMessageRegistry.Messages; }
 		}
 	}
 }
