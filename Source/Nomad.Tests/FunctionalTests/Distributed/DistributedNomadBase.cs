@@ -152,7 +152,6 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			var typeName = typeof (DistributedMessageCarrier).FullName;
 			var carrier = (DistributedMessageCarrier) kernel.ModuleAppDomain.CreateInstanceAndUnwrap(asmName, typeName);
 
-
 			return carrier;
 		}
 	}
