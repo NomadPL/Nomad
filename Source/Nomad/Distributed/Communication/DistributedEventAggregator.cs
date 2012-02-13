@@ -158,7 +158,7 @@ namespace Nomad.Distributed.Communication
 			throw new NotImplementedException();
 		}
 
-		public void OnPublishTimelyDelivery(byte[] byteSteam, TypeDescriptor typeDescriptor, DateTime voidTime)
+		public void OnPublishTimelyBufferedDelivery(byte[] byteSteam, TypeDescriptor typeDescriptor, DateTime voidTime)
 		{
 			throw new NotImplementedException();
 		}
@@ -188,9 +188,9 @@ namespace Nomad.Distributed.Communication
 			// filter local NomadMessage
 			if (message is NomadMessage)
 			{
-				return true;
+				return delivered;
 			}
-			
+
 			// try publishing message in the remote system
 			byte[] bytes = MessageSerializer.Serialize(message);
 			if (bytes == null)
@@ -199,18 +199,29 @@ namespace Nomad.Distributed.Communication
 			var descriptor = new TypeDescriptor(message.GetType());
 
 			bool remoteDelivered = _topicDelivery.SentAll(RemoteDistributedEventAggregator, bytes, descriptor);
-			
-			if (remoteDelivered && delivered)
-			{
-				return true;
-			}
 
-			return delivered;
+			return delivered && remoteDelivered;
 		}
 
-		public bool PublishTimelyBuffered<T>(T message, DateTime validUntil) where T : class
+		public void PublishTimelyBuffered<T>(T message, DateTime validUntil) where T : class
 		{
-			throw new NotImplementedException();
+			// try publishing message in the local system on this machine
+			_localEventAggregator.PublishTimelyBuffered(message, validUntil);
+
+			// filter local NomadMessage
+			if (message is NomadMessage)
+			{
+				return;
+			}
+
+			// try publishing message in the remote system
+			byte[] bytes = MessageSerializer.Serialize(message);
+			if (bytes == null)
+				return;
+
+			var descriptor = new TypeDescriptor(message.GetType());
+
+			_topicDelivery.SentAll(RemoteDistributedEventAggregator, bytes, descriptor);
 		}
 
 		public bool PublishSingleDelivery<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class

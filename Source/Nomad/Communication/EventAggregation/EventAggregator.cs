@@ -110,11 +110,14 @@ namespace Nomad.Communication.EventAggregation
 			// delivering current messages
 			foreach (var bufferedMessage in tTypeBuffer)
 			{
-				Publish((T) bufferedMessage.Message);
+				if (bufferedMessage.ExpiryTime > DateTime.Now)
+				{
+					Publish((T)bufferedMessage.Message);
+				}
 			}
 
 			// clearing outdate messages from the buffer
-			tTypeBuffer.RemoveAll(m => m.ExpiryTime < DateTime.Now);
+			tTypeBuffer.RemoveAll(m => m.ExpiryTime <= DateTime.Now);
 
 			return ticket;
 		}
@@ -152,7 +155,7 @@ namespace Nomad.Communication.EventAggregation
 			return true;
 		}
 
-		public bool PublishTimelyBuffered<T>(T message, DateTime validUntil) where T : class
+		public void PublishTimelyBuffered<T>(T message, DateTime validUntil) where T : class
 		{
 			// adding message to local buffer
 			Type type = typeof (T);
@@ -173,17 +176,16 @@ namespace Nomad.Communication.EventAggregation
 			}
 
 			// delivering current messages
-			bool delivered = true;
 			foreach (var bufferedMessage in tTypeBuffer)
 			{
-				if (!Publish((T) bufferedMessage.Message))
-					delivered = false;
+				if (bufferedMessage.ExpiryTime > DateTime.Now)
+				{
+					Publish((T) bufferedMessage.Message);
+				}
 			}
 
 			// clearing outdate messages from the buffer
-			tTypeBuffer.RemoveAll(m => m.ExpiryTime < DateTime.Now);
-
-			return delivered;
+			tTypeBuffer.RemoveAll(m => m.ExpiryTime <= DateTime.Now);
 		}
 
 		public bool PublishSingleDelivery<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class

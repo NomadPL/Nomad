@@ -46,7 +46,7 @@ namespace Nomad.Communication.EventAggregation
 		/// <param name="message">Message to send</param>
 		/// <param name="validUntil">Time at which the message will expire and won't be deliverable any more.</param>
 		/// <returns>True if called <see cref="IEventAggregator"/> implementing instance had subscriptions for <see cref="T"/></returns>
-		bool PublishTimelyBuffered<T>(T message, DateTime validUntil) where T : class;
+		void PublishTimelyBuffered<T>(T message, DateTime validUntil) where T : class;
 
 		/// <summary>
 		/// Notifies single subscribed member about passed <paramref name="message"/>
