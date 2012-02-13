@@ -27,6 +27,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		}
 
 		[Test]
+		[Ignore("Work in progress")]
 		public void module_published_once_only_one_module_recieved()
 		{
 			// path for this test (using the test method name) use in each code
