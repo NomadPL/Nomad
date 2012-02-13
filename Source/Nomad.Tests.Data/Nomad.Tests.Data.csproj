@@ -44,6 +44,9 @@
     <Compile Include="Distributed\Commons\DistributedMessageRegistry.cs" />
     <Compile Include="Distributed\SingleDelivery\SDListeningModule.cs" />
     <Compile Include="Distributed\SingleDelivery\SDPublishingModule.cs" />
+    <Compile Include="Distributed\TimeBuffered\InThePastPublishingModule.cs" />
+    <Compile Include="Distributed\TimeBuffered\SimpleListeningModule.cs" />
+    <Compile Include="Distributed\TimeBuffered\BufferedPublishingModule.cs" />
     <Compile Include="Distributed\Topic\SimpleListeningModule.cs" />
     <Compile Include="Distributed\Topic\SimplePublishingModule.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -54,9 +57,7 @@
       <Name>Nomad</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Distributed\TimedDelivery\" />
-  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
