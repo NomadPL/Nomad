@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Nomad.Messages;
 
 namespace Nomad.Communication.EventAggregation
@@ -184,7 +185,30 @@ namespace Nomad.Communication.EventAggregation
 
 		public bool PublishSingleDelivery<T>(T message, SingleDeliverySemantic singleDeliverySemantic) where T : class
 		{
-			throw new NotImplementedException();
+			// TODO: make the algorithm into single delivery be injectable
+			Type type = typeof(T);
+			HashSet<IEventAggregatorTicket> tickets;
+			lock (_subscriptions)
+			{
+				_subscriptions.TryGetValue(type, out tickets);
+			}
+
+			//prevention from throwing exception
+			if (tickets == null)
+				return false;
+
+			List<IEventAggregatorTicket> ticketsList;
+			lock (tickets)
+			{
+				ticketsList = new List<IEventAggregatorTicket>(tickets);
+			}
+
+			if (ticketsList.Count > 0)
+			{
+				ticketsList.First().Execute(message);
+			}
+			
+			return true;
 		}
 
 

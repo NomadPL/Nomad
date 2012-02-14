@@ -32,6 +32,7 @@ namespace Nomad.Distributed.Communication
 
 		private static IEventAggregator localEventAggregator;
 		private static ISingleDeliverySubsystem singleDeliverySubsystem;
+		private static readonly IDictionary<string, int> ticketsCounter = new Dictionary<string, int>();
 
 
 		private static readonly object LockObject = new object();
@@ -62,6 +63,8 @@ namespace Nomad.Distributed.Communication
 			_singleDelivery = singleDelivery;
 			LocalEventAggregator = localEventAggrgator;
 		}
+
+		#region Static Accessors
 
 		private static ISingleDeliverySubsystem SingleDeliverySubsystem
 		{
@@ -94,6 +97,8 @@ namespace Nomad.Distributed.Communication
 				}
 			}
 		}
+
+		#endregion
 
 		/// <summary>
 		///     Changes the list of the registerd remote site for the DEA.
@@ -166,7 +171,7 @@ namespace Nomad.Distributed.Communication
 		public bool OnPublishSingleDelivery(byte[] byteStream, TypeDescriptor typeDescriptor)
 		{
 			logger.Debug(string.Format("Acquired single delivery message of type {0}", typeDescriptor));
-			
+
 			// try recreating this type 
 			object sendObject;
 			Type type;
@@ -180,7 +185,7 @@ namespace Nomad.Distributed.Communication
 				return false;
 			}
 
-			var deliveryStatus = SingleDeliverySubsystem.RecieveSingle(LocalEventAggregator, sendObject, type);
+			bool deliveryStatus = SingleDeliverySubsystem.RecieveSingle(LocalEventAggregator, sendObject, type);
 			return deliveryStatus;
 		}
 
@@ -205,6 +210,18 @@ namespace Nomad.Distributed.Communication
 			{
 				logger.Warn("The type of the timelyBuffered message could not be recreated", e);
 			}
+		}
+
+		public bool IsSubscriberForType(TypeDescriptor descriptor)
+		{
+			string value = descriptor.QualifiedName;
+			int result;
+			if (ticketsCounter.TryGetValue(value, out result) && result > 0)
+			{
+				return true;
+			}
+
+			return false;
 		}
 
 		#endregion
@@ -259,9 +276,25 @@ namespace Nomad.Distributed.Communication
 		public IEventAggregatorTicket<T> Subscribe<T>(Action<T> action, DeliveryMethod deliveryMethod) where T : class
 		{
 			// subscribe on local event
-			return localEventAggregator.Subscribe(action, deliveryMethod);
+			IEventAggregatorTicket<T> ticket = localEventAggregator.Subscribe(action, deliveryMethod);
 
-			// subscribe on remote or not by now
+			// update counter of subscrbers
+			int value;
+			string key = typeof (T).AssemblyQualifiedName;
+			if (ticketsCounter.TryGetValue(key, out value))
+			{
+				ticketsCounter[key] = value + 1;
+			}
+			else
+			{
+				ticketsCounter[key] = 0;
+			}
+
+			// remove from ticketCounter if ticket is disposed
+			ticket.TicketDisposed += (sender, args) => { ticketsCounter[key] -= 1; };
+
+			// subscribe on remote or not by now);
+			return ticket;
 		}
 
 		public bool Publish<T>(T message) where T : class

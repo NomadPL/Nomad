@@ -45,5 +45,14 @@ namespace Nomad.Distributed.Communication
 		/// </summary>		
 		[OperationContract]
 		void OnPublishTimelyBufferedDelivery(byte[] byteStream, TypeDescriptor typeDescriptor,DateTime voidTime);
+
+		/// <summary>
+		///		Control message used to check if current <see cref="IDistributedEventAggregator"/> has in its local
+		/// <see cref="IEventAggregator"/> any subscribers for this kind of message, denoted by <paramref name="descriptor"/>.
+		/// </summary>
+		/// <param name="descriptor">The type of the message to be sent</param>
+		/// <returns>True if there is subscriber for message of type <paramref name="descriptor"/></returns>
+		[OperationContract]
+		bool IsSubscriberForType(TypeDescriptor descriptor);
 	}
 }

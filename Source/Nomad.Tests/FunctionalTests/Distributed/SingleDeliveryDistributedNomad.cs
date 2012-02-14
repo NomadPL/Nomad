@@ -40,13 +40,15 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			// use the default Nomad Configuration
 			ListenerKernel = new NomadKernel();
 			IModuleDiscovery listnerDiscovery =
-				new CompositeModuleDiscovery(new SingleModuleDiscovery(listener1), new SingleModuleDiscovery(listener2));
+				new CompositeModuleDiscovery(new SingleModuleDiscovery(listener1),
+											 new SingleModuleDiscovery(listener2)
+											 );
+
 			ListenerKernel.LoadModules(listnerDiscovery);
 			DistributedMessageCarrier firstCarrier = CreateCarrier(ListenerKernel);
 
-			PublisherKernel = new NomadKernel();
 			IModuleDiscovery publisherDiscovery = new SingleModuleDiscovery(publisherDll);
-			PublisherKernel.LoadModules(publisherDiscovery);
+			ListenerKernel.LoadModules(publisherDiscovery);
 
 			Thread.Sleep(PUBLISH_TIMEOUT);
 			int firstMsg = firstCarrier.GetStatus.Count;
