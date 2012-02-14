@@ -115,6 +115,7 @@
     <Compile Include="Distributed\Communication\Deliveries\IDeliverySubsystem.cs" />
     <Compile Include="Distributed\Communication\Deliveries\SingleDelivery\BasicSingleDeliverySubsystem.cs" />
     <Compile Include="Distributed\Communication\Deliveries\SingleDelivery\ISingleDeliverySubsystem.cs" />
+    <Compile Include="Distributed\Communication\Deliveries\TimedDelivery\BasicTimedDeliverySubsystem.cs" />
     <Compile Include="Distributed\Communication\Deliveries\TimedDelivery\ITimedDeliverySubsystem.cs" />
     <Compile Include="Distributed\Communication\Deliveries\TopicDelivery\BasicTopicDeliverySubsystem.cs" />
     <Compile Include="Distributed\Communication\Deliveries\TopicDelivery\ITopicDeliverySubsystem.cs" />
@@ -166,6 +167,7 @@
     <Compile Include="Modules\Manifest\ModuleManifestFactory.cs" />
     <Compile Include="Modules\Installers\NomadEventAggregatorInstaller.cs" />
     <Compile Include="Distributed\Installers\NomadDistributedEventAggregatorInstaller.cs" />
+    <Compile Include="Distributed\Installers\NomadDistributedDeliverySubsystemsInstaller.cs" />
     <Compile Include="Regions\Adapters\ItemsControlAdapter.cs" />
     <Compile Include="Regions\Adapters\MultipleActiveViewRegion.cs" />
     <Compile Include="Regions\Adapters\StatusBarAdapter.cs" />

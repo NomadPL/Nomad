@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.ServiceModel;
-using System.ServiceModel.Channels;
+using Nomad.Communication.EventAggregation;
 using Nomad.Distributed.Communication;
+using Nomad.Distributed.Communication.Deliveries.SingleDelivery;
+using Nomad.Distributed.Communication.Deliveries.TimedDelivery;
+using Nomad.Distributed.Communication.Deliveries.TopicDelivery;
 
 namespace Nomad.Distributed
 {
@@ -14,6 +16,7 @@ namespace Nomad.Distributed
 	///     This is simplified version of the standard WCF configuration, because the neeed of
 	/// providing whole WCF xml based configuration is to tiresome.
 	/// </para>
+	/// TODO: provide ability to freeze such configuration the same as NomadConfiguration
 	/// </summary>
 	[Serializable]
 	public class DistributedConfiguration
@@ -32,12 +35,15 @@ namespace Nomad.Distributed
 		{
 			get
 			{
-				return new DistributedConfiguration()
-						   {
-							   LocalURI = new Uri("net.tcp://127.0.0.1:5555/IDEA"),
-							   URLs = new List<string>(),
-							   Mode = ResolutionMode.Manual
-						   };
+				return new DistributedConfiguration
+				       	{
+				       		LocalURI = new Uri("net.tcp://127.0.0.1:5555/IDEA"),
+				       		URLs = new List<string>(),
+				       		Mode = ResolutionMode.Manual,
+				       		TopicDeliverySubsystem = new BasicTopicDeliverySubsystem(),
+				       		SingleDeliverySubsystem = new BasicSingleDeliverySubsystem(),
+				       		TimedDeliverySubsystem = new BasicTimedDeliverySubsystem()
+				       	};
 			}
 		}
 
@@ -53,5 +59,29 @@ namespace Nomad.Distributed
 		/// be served.
 		/// </summary>
 		public Uri LocalURI { get; set; }
+
+		/// <summary>
+		///		Describes the used subsystem for topic deliveries aka <see cref="IEventAggregator.Publish{T}"/> method.
+		/// </summary>
+		/// <remarks>
+		///		The provided implementations must be <see cref="SerializableAttribute"/> marked.
+		/// </remarks>
+		public ITopicDeliverySubsystem TopicDeliverySubsystem { get; set; }
+
+		/// <summary>
+		///		Describes the used subsystem for sinlge deliveeries aka <see cref="IEventAggregator.PublishSingleDelivery{T}"/> method.
+		/// </summary>
+		/// <remarks>
+		///		The provided implementations must be <see cref="SerializableAttribute"/> marked.
+		/// </remarks>
+		public ISingleDeliverySubsystem SingleDeliverySubsystem { get; set; }
+
+		/// <summary>
+		///		Describes the used subsystem for timed delivery aka <see cref="IEventAggregator.PublishTimelyBuffered{T}"/> method.
+		/// </summary>
+		/// <remarks>
+		///		The provided implementations must be <see cref="SerializableAttribute"/> marked.
+		/// </remarks>
+		public ITimedDeliverySubsystem TimedDeliverySubsystem { get; set; }
 	}
 }

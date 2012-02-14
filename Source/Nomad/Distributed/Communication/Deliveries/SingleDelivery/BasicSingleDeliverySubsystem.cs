@@ -19,16 +19,19 @@ namespace Nomad.Distributed.Communication.Deliveries.SingleDelivery
 	///		The implements two types of deliveries within <see cref="SingleDeliverySemantic"/>.
 	/// </para>
 	/// </summary>
+	[Serializable]
 	public class BasicSingleDeliverySubsystem : ISingleDeliverySubsystem
 	{
-		private static readonly ILog Logger = LogManager.GetLogger(NomadConstants.NOMAD_LOGGER_REPOSITORY,
-		                                                           typeof (BasicSingleDeliverySubsystem));
+		private ILog Logger;
 
 		#region ISingleDeliverySubsystem Members
 
 		public bool SentSingle(IEnumerable<IDistributedEventAggregator> eventAggregators, byte[] messageContent,
 		                       TypeDescriptor descriptor, SingleDeliverySemantic delivery)
 		{
+			// FIXME: this code is wrong from the performance point of view
+			Logger = LogManager.GetLogger(NomadConstants.NOMAD_LOGGER_REPOSITORY, typeof (BasicSingleDeliverySubsystem));
+
 			var deaWithSubscribers = new List<IDistributedEventAggregator>();
 
 			// at fist send to the other deas the is subscrbed
