@@ -10,6 +10,7 @@ using Nomad.Core;
 using Nomad.Distributed;
 using Nomad.Distributed.Communication;
 using Nomad.Distributed.Communication.Resolvers;
+using Nomad.Distributed.Communication.Utils;
 using Nomad.Distributed.Installers;
 using Nomad.Modules.Installers;
 using Nomad.Utils;
@@ -115,8 +116,7 @@ namespace Nomad.Modules
 
 		private void RegisterServiceHostDEA(DistributedConfiguration distributedConfiguration)
 		{
-			// TODO: refactor this code to be working with IInstanceProvider classes and whole WCF stack
-			_distributedEventAggregatorServiceHost = new ServiceHost(typeof (DistributedEventAggregator));
+			_distributedEventAggregatorServiceHost = new DIServiceHost(typeof (DistributedEventAggregator), _windsorContainer);
 			_distributedEventAggregatorServiceHost.AddServiceEndpoint
 				(
 					typeof (IDistributedEventAggregator),

@@ -119,6 +119,10 @@
     <Compile Include="Distributed\Communication\Deliveries\TimedDelivery\ITimedDeliverySubsystem.cs" />
     <Compile Include="Distributed\Communication\Deliveries\TopicDelivery\BasicTopicDeliverySubsystem.cs" />
     <Compile Include="Distributed\Communication\Deliveries\TopicDelivery\ITopicDeliverySubsystem.cs" />
+    <Compile Include="Distributed\Communication\Utils\DIInstanceProvider.cs" />
+    <Compile Include="Distributed\Communication\Utils\DIServiceBehaviour.cs" />
+    <Compile Include="Distributed\Communication\Utils\DIServiceHost.cs" />
+    <Compile Include="Distributed\Communication\Utils\DIServiceHostFactory.cs" />
     <Compile Include="Distributed\Communication\Utils\MessageSerializer.cs" />
     <Compile Include="Distributed\Communication\Resolvers\IResolver.cs" />
     <Compile Include="Distributed\Communication\Resolvers\ResolverBase.cs" />
