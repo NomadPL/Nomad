@@ -16,11 +16,12 @@ namespace Nomad.Distributed.Communication.Deliveries.SingleDelivery
 		/// <summary>
 		///		Sends the message as the typical single delivery.
 		/// </summary>
-		/// <param name="eventAggregators"></param>
+		///<param name="eventAggregators"></param>
 		///<param name="messageContent"></param>
 		///<param name="descriptor"></param>
+		///<param name="delivery"></param>
 		///<returns></returns>
-		bool SentSingle(IEnumerable<IDistributedEventAggregator> eventAggregators, byte[] messageContent, TypeDescriptor descriptor);
+		bool SentSingle(IEnumerable<IDistributedEventAggregator> eventAggregators, byte[] messageContent, TypeDescriptor descriptor, SingleDeliverySemantic delivery);
 
 		/// <summary>
 		///		Revieves the message as does something with it.

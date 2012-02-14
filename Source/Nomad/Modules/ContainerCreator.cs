@@ -143,6 +143,7 @@ namespace Nomad.Modules
 			{
 				// use nomad specific installer for that
 				_windsorContainer.Install(
+					new NomadDistributedDeliverySubsystemsInstaller(distributedConfiguration),
 					new NomadDistributedEventAggregatorInstaller(),
 					new NomadServiceLocatorInstaller(),
 					new ModuleLoaderInstaller()

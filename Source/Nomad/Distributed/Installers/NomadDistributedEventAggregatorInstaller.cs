@@ -19,11 +19,8 @@ namespace Nomad.Distributed.Installers
 
 		public void Install(IWindsorContainer container, IConfigurationStore store)
 		{
-			// TODO: installations of delivery subsystems should be configured within distributed configuration
 			container.Register(
 				Component.For<IGuiThreadProvider>().ImplementedBy<LazyWpfGuiThreadProvider>(),
-				Component.For<ITopicDeliverySubsystem>().ImplementedBy<BasicTopicDeliverySubsystem>(),
-				Component.For<ISingleDeliverySubsystem>().ImplementedBy<BasicSingleDeliverySubsystem>(),
 				Component
 					.For<IEventAggregator>()
 					.UsingFactoryMethod(x => new DistributedEventAggregator(new EventAggregator(container.Resolve<IGuiThreadProvider>()),

@@ -452,7 +452,7 @@ namespace Nomad.Distributed.Communication
 				return false;
 			}
 
-			bool remoteDelivery = _singleDelivery.SentSingle(RemoteDistributedEventAggregator, bytes, descriptor);
+			bool remoteDelivery = _singleDelivery.SentSingle(RemoteDistributedEventAggregator, bytes, descriptor,singleDeliverySemantic);
 			return remoteDelivery;
 		}
 
