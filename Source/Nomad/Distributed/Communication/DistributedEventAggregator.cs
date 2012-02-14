@@ -257,9 +257,10 @@ namespace Nomad.Distributed.Communication
 		{
 			if (message is NomadMessage)
 			{
-				throw new ArgumentException("The type 'NomadMessage' are not being sent");
+				bytes = null;
+				descriptor = null;
+				return;
 			}
-
 			bytes = MessageSerializer.Serialize(message);
 			descriptor = new TypeDescriptor(message.GetType());
 		}
@@ -308,6 +309,11 @@ namespace Nomad.Distributed.Communication
 			try
 			{
 				PackData(message, out bytes, out descriptor);
+				if (bytes == null && descriptor == null)
+				{
+					// tried to send NomadMessage.
+					return false;
+				}
 			}
 			catch (Exception e)
 			{
@@ -331,6 +337,11 @@ namespace Nomad.Distributed.Communication
 			try
 			{
 				PackData(message, out bytes, out descriptor);
+				if (bytes == null && descriptor == null)
+				{
+					// tried to send NomadMessage.
+					return;
+				}
 			}
 			catch (Exception e)
 			{
