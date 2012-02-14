@@ -17,6 +17,7 @@ namespace Nomad.Distributed.Installers
 	{
 		public const String ON_SITE_NAME = "OnSiteEVG";
 
+		#region IWindsorInstaller Members
 
 		public void Install(IWindsorContainer container, IConfigurationStore store)
 		{
@@ -24,13 +25,17 @@ namespace Nomad.Distributed.Installers
 				Component.For<IGuiThreadProvider>().ImplementedBy<LazyWpfGuiThreadProvider>(),
 				Component
 					.For<IEventAggregator>()
-					.UsingFactoryMethod(x => new DistributedEventAggregator(new EventAggregator(container.Resolve<IGuiThreadProvider>()),
-																								container.Resolve<ITopicDeliverySubsystem>(),
-																								container.Resolve<ISingleDeliverySubsystem>(),
-																								container.Resolve<ITimedDeliverySubsystem>()))
+					.Forward<DistributedEventAggregator>()
+					.UsingFactoryMethod(
+						x => new DistributedEventAggregator(new EventAggregator(container.Resolve<IGuiThreadProvider>()),
+						                                    container.Resolve<ITopicDeliverySubsystem>(),
+						                                    container.Resolve<ISingleDeliverySubsystem>(),
+						                                    container.Resolve<ITimedDeliverySubsystem>()))
 					.Named(ON_SITE_NAME)
 					.LifeStyle.Singleton
 				);
 		}
+
+		#endregion
 	}
 }
