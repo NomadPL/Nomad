@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.ServiceModel;
+using Nomad.Distributed.Communication.Deliveries.TimedDelivery;
 using Nomad.Messages.Loading;
 using log4net;
 using Nomad.Communication.EventAggregation;
@@ -33,6 +34,7 @@ namespace Nomad.Distributed.Communication
 
 		private static IEventAggregator localEventAggregator;
 		private static ISingleDeliverySubsystem singleDeliverySubsystem;
+		private static ITimedDeliverySubsystem _timedDeliverySubsystem;
 		private static readonly IDictionary<string, int> TicketsCounter = new Dictionary<string, int>();
 
 
@@ -42,8 +44,6 @@ namespace Nomad.Distributed.Communication
 		private readonly ITopicDeliverySubsystem _topicDelivery;
 
 		private IList<IDistributedEventAggregator> _deas;
-
-		private readonly List<BufferedBinaryMessage> _bufferedBinaryMessages = new List<BufferedBinaryMessage>();
 
 
 		/// <summary>
@@ -60,10 +60,12 @@ namespace Nomad.Distributed.Communication
 		///<param name="topicDelivery">The subsystem responsible for topic deliveries if <see cref="IEventAggregator"/></param>
 		///<param name="singleDelivery">The subsystem used for single delivery method of <see cref="IEventAggregator"/></param>
 		public DistributedEventAggregator(IEventAggregator localEventAggrgator, ITopicDeliverySubsystem topicDelivery,
-		                                  ISingleDeliverySubsystem singleDelivery)
+		                                  ISingleDeliverySubsystem singleDelivery,
+		                                  ITimedDeliverySubsystem timedDeliverySubsystem)
 		{
 			_topicDelivery = topicDelivery;
 			_singleDelivery = singleDelivery;
+			_timedDeliverySubsystem = timedDeliverySubsystem;
 			LocalEventAggregator = localEventAggrgator;
 			SingleDeliverySubsystem = singleDelivery;
 		}
@@ -154,7 +156,7 @@ namespace Nomad.Distributed.Communication
 				// try recreating this type 
 				object sendObject;
 				Type type;
-				UnPackData(typeDescriptor, byteStream, out sendObject, out type);
+				MessageSerializer.UnPackData(typeDescriptor, byteStream, out sendObject, out type);
 
 				// invoke this generic method with type t
 				// TODO: this is totaly not refactor aware use expression tree to get this publish thing
@@ -181,7 +183,7 @@ namespace Nomad.Distributed.Communication
 			Type type;
 			try
 			{
-				UnPackData(typeDescriptor, byteStream, out sendObject, out type);
+				MessageSerializer.UnPackData(typeDescriptor, byteStream, out sendObject, out type);
 			}
 			catch (Exception e)
 			{
@@ -202,7 +204,7 @@ namespace Nomad.Distributed.Communication
 				//try recreating this type 
 				object sendObject;
 				Type type;
-				UnPackData(typeDescriptor, byteStream, out sendObject, out type);
+				MessageSerializer.UnPackData(typeDescriptor, byteStream, out sendObject, out type);
 
 				// invoke this generic method with type T
 				MethodInfo methodInfo = LocalEventAggregator.GetType().GetMethod("PublishTimelyBuffered");
@@ -214,7 +216,7 @@ namespace Nomad.Distributed.Communication
 			{
 				//logger.Warn("The type of the timelyBuffered message could not be recreated", e);
 				// adding message to binaryMessagesBufer
-				_bufferedBinaryMessages.Add(new BufferedBinaryMessage(byteStream,voidTime,typeDescriptor));
+				_timedDeliverySubsystem.AddMessageToBuffer(new BufferedBinaryMessage(byteStream, voidTime, typeDescriptor));
 			}
 		}
 
@@ -236,35 +238,12 @@ namespace Nomad.Distributed.Communication
 
 		// NOTE: this code could be easly refactored into other class (quite the same as serialization / desrialization)
 
-		private void UnPackData(TypeDescriptor typeDescriptor, byte[] byteStream, out object sendObject, out Type type)
-		{
-			type = Type.GetType(typeDescriptor.QualifiedName);
-			if (type != null)
-			{
-				var nomadVersion = new Version(type.Assembly.GetName().Version);
-
-				if (!nomadVersion.Equals(typeDescriptor.Version))
-				{
-					throw new InvalidCastException("The version of the assembly does not match");
-				}
-			}
-
-			// try deserializing object
-			sendObject = MessageSerializer.Deserialize(byteStream);
-
-			// check if o is assignable
-			if (type != null && !type.IsInstanceOfType(sendObject))
-			{
-				throw new InvalidCastException("The sent object cannot be casted to sent type");
-			}
-		}
-
 		private void PackData<T>(T message, out byte[] bytes, out TypeDescriptor descriptor)
 		{
 			// adding binaryBuffer deserializability possibility check
 			if (message is NomadAllModulesLoadedMessage)
 			{
-				TryDeliverFromBinaryBuffer();
+				_timedDeliverySubsystem.TryDeliverBufferedMessages(localEventAggregator);
 			}
 
 			if (message is NomadMessage)
@@ -275,48 +254,6 @@ namespace Nomad.Distributed.Communication
 			}
 			bytes = MessageSerializer.Serialize(message);
 			descriptor = new TypeDescriptor(message.GetType());
-		}
-
-		/// <summary>
-		/// This method is called when <see cref="NomadAllModulesLoadedMessage"/> is received from the <see cref="NomadKernel"/>.
-		/// Such message means that there were possibly new <see cref="Assembly"/> loaded and that some binary waiting messages might be delivered.
-		/// </summary>
-		private void TryDeliverFromBinaryBuffer()
-		{
-			var deliveredMessages = new List<BufferedBinaryMessage>();
-			
-			foreach (var bufferedBinaryMessage in _bufferedBinaryMessages)
-			{
-				// omit already expired messages
-				if (bufferedBinaryMessage.ExpiryTime <= DateTime.Now) continue;
-
-				// try deserialize
-				try
-				{
-					object message;
-					Type type;
-					UnPackData(bufferedBinaryMessage.Descriptor, bufferedBinaryMessage.Message, out message, out type);
-				}
-				catch
-				{
-					// binary message is yet not deliverable
-					continue;
-				}
-
-				// message is deliverable
-				OnPublishTimelyBufferedDelivery(bufferedBinaryMessage.Message, bufferedBinaryMessage.Descriptor,
-				                                bufferedBinaryMessage.ExpiryTime);
-				deliveredMessages.Add(bufferedBinaryMessage);
-			}
-
-			// clean the buffer from delivered messages
-			foreach (var deliveredMessage in deliveredMessages)
-			{
-				_bufferedBinaryMessages.Remove(deliveredMessage);
-			}
-
-			// clean binary buffer from expired messages
-			_bufferedBinaryMessages.RemoveAll(m => m.ExpiryTime <= DateTime.Now);
 		}
 
 		#endregion
@@ -452,7 +389,8 @@ namespace Nomad.Distributed.Communication
 				return false;
 			}
 
-			bool remoteDelivery = _singleDelivery.SentSingle(RemoteDistributedEventAggregator, bytes, descriptor,singleDeliverySemantic);
+			bool remoteDelivery = _singleDelivery.SentSingle(RemoteDistributedEventAggregator, bytes, descriptor,
+			                                                 singleDeliverySemantic);
 			return remoteDelivery;
 		}
 

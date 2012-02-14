@@ -5,6 +5,7 @@ using Castle.Windsor;
 using Nomad.Communication.EventAggregation;
 using Nomad.Distributed.Communication;
 using Nomad.Distributed.Communication.Deliveries.SingleDelivery;
+using Nomad.Distributed.Communication.Deliveries.TimedDelivery;
 using Nomad.Distributed.Communication.Deliveries.TopicDelivery;
 
 namespace Nomad.Distributed.Installers
@@ -25,7 +26,8 @@ namespace Nomad.Distributed.Installers
 					.For<IEventAggregator>()
 					.UsingFactoryMethod(x => new DistributedEventAggregator(new EventAggregator(container.Resolve<IGuiThreadProvider>()),
 																								container.Resolve<ITopicDeliverySubsystem>(),
-																								container.Resolve<ISingleDeliverySubsystem>()))
+																								container.Resolve<ISingleDeliverySubsystem>(),
+																								container.Resolve<ITimedDeliverySubsystem>()))
 					.Named(ON_SITE_NAME)
 					.LifeStyle.Singleton
 				);

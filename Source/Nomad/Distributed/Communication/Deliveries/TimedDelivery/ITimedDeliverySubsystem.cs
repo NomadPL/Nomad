@@ -4,16 +4,20 @@ using Nomad.Communication.EventAggregation;
 namespace Nomad.Distributed.Communication.Deliveries.TimedDelivery
 {
 	/// <summary>
-	///		The implementation of the delivering method
-	/// for publish on the <see cref="IEventAggregator.PublishTimelyBuffered{T}"/> method.
+	/// Interface used to implement temporarily notDeserializable messages that need to be delivered in the future.
 	/// </summary>
-	public interface ITimedDeliverySubsystem 
+	public interface ITimedDeliverySubsystem
 	{
 		/// <summary>
-		///		TODO: make this code work
+		/// Adds unserializable message to deliver later buffer.
 		/// </summary>
-		/// <param name="eventAggregators"></param>
-		/// <returns></returns>
-		bool SendTimed(IEnumerable<IDistributedEventAggregator> eventAggregators);
+		/// <param name="message"></param>
+		void AddMessageToBuffer(BufferedBinaryMessage message);
+
+		/// <summary>
+		/// Tries to deliver buffered binary messages.
+		/// </summary>
+		/// <param name="localEA">Local EventAggregator</param>
+		void TryDeliverBufferedMessages(IEventAggregator localEA);
 	}
 }
