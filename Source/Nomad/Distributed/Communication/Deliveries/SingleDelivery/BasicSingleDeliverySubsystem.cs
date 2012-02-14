@@ -16,8 +16,7 @@ namespace Nomad.Distributed.Communication.Deliveries.SingleDelivery
 	/// based on FIFO responses. 
 	/// </para>
 	/// <para>
-	///		This code follows the semantics of the <see cref="SingleDeliverySemantic.AtLeastOnce"/>. This is default 
-	/// implementation of <see cref="ISingleDeliverySubsystem"/>.
+	///		The implements two types of deliveries within <see cref="SingleDeliverySemantic"/>.
 	/// </para>
 	/// </summary>
 	public class BasicSingleDeliverySubsystem : ISingleDeliverySubsystem
@@ -28,7 +27,7 @@ namespace Nomad.Distributed.Communication.Deliveries.SingleDelivery
 		#region ISingleDeliverySubsystem Members
 
 		public bool SentSingle(IEnumerable<IDistributedEventAggregator> eventAggregators, byte[] messageContent,
-		                       TypeDescriptor descriptor)
+		                       TypeDescriptor descriptor, SingleDeliverySemantic delivery)
 		{
 			var deaWithSubscribers = new List<IDistributedEventAggregator>();
 
@@ -64,14 +63,27 @@ namespace Nomad.Distributed.Communication.Deliveries.SingleDelivery
 					bool result = dea.OnPublishSingleDelivery(messageContent, descriptor);
 					if (result)
 					{
-						// TODO: add hacking with sementaics etc
-						// hacking with semantics ?
+						// the message was delivered so happy day scenario (yay)
 						return true;
 					}
 				}
 				catch (Exception e)
 				{
 					Logger.Warn("Exception during sending OnPublish phase", e);
+
+					// there was message delivery problem
+					if (delivery == SingleDeliverySemantic.AtLeastOnce)
+					{
+						continue;
+					}
+					else if (delivery == SingleDeliverySemantic.AtMostOnce)
+					{
+						return true;
+					}
+					else
+					{
+						throw new InvalidOperationException("Semantic of delivery is not known", e);
+					}
 				}
 			}
 
@@ -82,11 +94,11 @@ namespace Nomad.Distributed.Communication.Deliveries.SingleDelivery
 		public bool RecieveSingle(IEventAggregator eventAggregator, object sendObject, Type type)
 		{
 			// TODO: provide lambda expression reader from some trick in Moku
-			var methodInfo = eventAggregator.GetType().GetMethod("PublishSingleDelivery");
-			var goodMethodInfo = methodInfo.MakeGenericMethod(type);
+			MethodInfo methodInfo = eventAggregator.GetType().GetMethod("PublishSingleDelivery");
+			MethodInfo goodMethodInfo = methodInfo.MakeGenericMethod(type);
 
 			// semantic is not used for local event aggregator
-			object result = goodMethodInfo.Invoke(eventAggregator, new[] { sendObject , null});
+			object result = goodMethodInfo.Invoke(eventAggregator, new[] {sendObject, null});
 			return (bool) result;
 		}
 
