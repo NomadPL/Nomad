@@ -32,7 +32,7 @@ namespace Nomad.Distributed.Communication
 
 		private static IEventAggregator localEventAggregator;
 		private static ISingleDeliverySubsystem singleDeliverySubsystem;
-		private static readonly IDictionary<string, int> ticketsCounter = new Dictionary<string, int>();
+		private static readonly IDictionary<string, int> TicketsCounter = new Dictionary<string, int>();
 
 
 		private static readonly object LockObject = new object();
@@ -62,6 +62,7 @@ namespace Nomad.Distributed.Communication
 			_topicDelivery = topicDelivery;
 			_singleDelivery = singleDelivery;
 			LocalEventAggregator = localEventAggrgator;
+			SingleDeliverySubsystem = singleDelivery;
 		}
 
 		#region Static Accessors
@@ -216,7 +217,7 @@ namespace Nomad.Distributed.Communication
 		{
 			string value = descriptor.QualifiedName;
 			int result;
-			if (ticketsCounter.TryGetValue(value, out result) && result > 0)
+			if (TicketsCounter.TryGetValue(value, out result) && result > 0)
 			{
 				return true;
 			}
@@ -282,17 +283,30 @@ namespace Nomad.Distributed.Communication
 			// update counter of subscrbers
 			int value;
 			string key = typeof (T).AssemblyQualifiedName;
-			if (ticketsCounter.TryGetValue(key, out value))
+			if (TicketsCounter.TryGetValue(key, out value))
 			{
-				ticketsCounter[key] = value + 1;
+				TicketsCounter[key] = value + 1;
 			}
 			else
 			{
-				ticketsCounter[key] = 0;
+				TicketsCounter[key] = 1;
 			}
 
 			// remove from ticketCounter if ticket is disposed
-			ticket.TicketDisposed += (sender, args) => { ticketsCounter[key] -= 1; };
+			ticket.TicketDisposed += (sender, args) =>
+			                         	{
+			                         		int v;
+			                         		string k = args.EventType.AssemblyQualifiedName;
+											if (TicketsCounter.TryGetValue(k, out v))
+											{
+												TicketsCounter[k] = v - 1;
+											}
+											else
+											{
+												throw new InvalidOperationException("Removed the typed which was never added");
+											}
+			                         		
+			                         	};
 
 			// subscribe on remote or not by now);
 			return ticket;
