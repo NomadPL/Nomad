@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using log4net;
 using Nomad.Core;
+using Version = Nomad.Utils.Version;
 
 namespace Nomad.Distributed.Communication.Utils
 {
@@ -65,6 +66,29 @@ namespace Nomad.Distributed.Communication.Utils
 			}
 
 			return bytes;
+		}
+
+		internal static void UnPackData(TypeDescriptor typeDescriptor, byte[] byteStream, out object sendObject, out Type type)
+		{
+			type = Type.GetType(typeDescriptor.QualifiedName);
+			if (type != null)
+			{
+				var nomadVersion = new Version(type.Assembly.GetName().Version);
+
+				if (!nomadVersion.Equals(typeDescriptor.Version))
+				{
+					throw new InvalidCastException("The version of the assembly does not match");
+				}
+			}
+
+			// try deserializing object
+			sendObject = Deserialize(byteStream);
+
+			// check if o is assignable
+			if (type != null && !type.IsInstanceOfType(sendObject))
+			{
+				throw new InvalidCastException("The sent object cannot be casted to sent type");
+			}
 		}
 	}
 }
