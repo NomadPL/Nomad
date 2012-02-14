@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Reflection;
 using System.ServiceModel;
+using Nomad.Messages.Loading;
 using log4net;
 using Nomad.Communication.EventAggregation;
 using Nomad.Core;
@@ -41,6 +42,8 @@ namespace Nomad.Distributed.Communication
 		private readonly ITopicDeliverySubsystem _topicDelivery;
 
 		private IList<IDistributedEventAggregator> _deas;
+
+		private readonly List<BufferedBinaryMessage> _bufferedBinaryMessages = new List<BufferedBinaryMessage>();
 
 
 		/// <summary>
@@ -209,7 +212,9 @@ namespace Nomad.Distributed.Communication
 			}
 			catch (Exception e)
 			{
-				logger.Warn("The type of the timelyBuffered message could not be recreated", e);
+				//logger.Warn("The type of the timelyBuffered message could not be recreated", e);
+				// adding message to binaryMessagesBufer
+				_bufferedBinaryMessages.Add(new BufferedBinaryMessage(byteStream,voidTime,typeDescriptor));
 			}
 		}
 
@@ -256,6 +261,12 @@ namespace Nomad.Distributed.Communication
 
 		private void PackData<T>(T message, out byte[] bytes, out TypeDescriptor descriptor)
 		{
+			// adding binaryBuffer deserializability possibility check
+			if (message is NomadAllModulesLoadedMessage)
+			{
+				TryDeliverFromBinaryBuffer();
+			}
+
 			if (message is NomadMessage)
 			{
 				bytes = null;
@@ -264,6 +275,48 @@ namespace Nomad.Distributed.Communication
 			}
 			bytes = MessageSerializer.Serialize(message);
 			descriptor = new TypeDescriptor(message.GetType());
+		}
+
+		/// <summary>
+		/// This method is called when <see cref="NomadAllModulesLoadedMessage"/> is received from the <see cref="NomadKernel"/>.
+		/// Such message means that there were possibly new <see cref="Assembly"/> loaded and that some binary waiting messages might be delivered.
+		/// </summary>
+		private void TryDeliverFromBinaryBuffer()
+		{
+			var deliveredMessages = new List<BufferedBinaryMessage>();
+			
+			foreach (var bufferedBinaryMessage in _bufferedBinaryMessages)
+			{
+				// omit already expired messages
+				if (bufferedBinaryMessage.ExpiryTime <= DateTime.Now) continue;
+
+				// try deserialize
+				try
+				{
+					object message;
+					Type type;
+					UnPackData(bufferedBinaryMessage.Descriptor, bufferedBinaryMessage.Message, out message, out type);
+				}
+				catch
+				{
+					// binary message is yet not deliverable
+					continue;
+				}
+
+				// message is deliverable
+				OnPublishTimelyBufferedDelivery(bufferedBinaryMessage.Message, bufferedBinaryMessage.Descriptor,
+				                                bufferedBinaryMessage.ExpiryTime);
+				deliveredMessages.Add(bufferedBinaryMessage);
+			}
+
+			// clean the buffer from delivered messages
+			foreach (var deliveredMessage in deliveredMessages)
+			{
+				_bufferedBinaryMessages.Remove(deliveredMessage);
+			}
+
+			// clean binary buffer from expired messages
+			_bufferedBinaryMessages.RemoveAll(m => m.ExpiryTime <= DateTime.Now);
 		}
 
 		#endregion
@@ -297,15 +350,14 @@ namespace Nomad.Distributed.Communication
 			                         	{
 			                         		int v;
 			                         		string k = args.EventType.AssemblyQualifiedName;
-											if (TicketsCounter.TryGetValue(k, out v))
-											{
-												TicketsCounter[k] = v - 1;
-											}
-											else
-											{
-												throw new InvalidOperationException("Removed the typed which was never added");
-											}
-			                         		
+			                         		if (TicketsCounter.TryGetValue(k, out v))
+			                         		{
+			                         			TicketsCounter[k] = v - 1;
+			                         		}
+			                         		else
+			                         		{
+			                         			throw new InvalidOperationException("Removed the typed which was never added");
+			                         		}
 			                         	};
 
 			// subscribe on remote or not by now);

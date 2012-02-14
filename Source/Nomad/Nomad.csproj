@@ -101,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Communication\EventAggregation\BufferedMessage.cs" />
+    <Compile Include="Distributed\Communication\BufferedBinaryMessage.cs" />
     <Compile Include="Communication\EventAggregation\DeliveryMethod.cs" />
     <Compile Include="Communication\EventAggregation\ForwardingEventAggregator.cs" />
     <Compile Include="Communication\EventAggregation\EventAggregatorTicket.cs" />
