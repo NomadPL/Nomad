@@ -38,8 +38,6 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 			Assert.DoesNotThrow(() => PublisherKernel = new NomadKernel(config2));
 
 			PublisherKernel.EventAggregator.Publish(new NomadSimpleMessage("Hello from kernel2"));
-
-			Assert.DoesNotThrow(() => PublisherKernel.Dispose());
 		}
 	}
 }

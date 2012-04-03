@@ -42,6 +42,7 @@
     <Compile Include="Distributed\Commons\DistributableMessage.cs" />
     <Compile Include="Distributed\Commons\DistributedMessageCarrier.cs" />
     <Compile Include="Distributed\Commons\DistributedMessageRegistry.cs" />
+    <Compile Include="Distributed\Commons\PathMessage.cs" />
     <Compile Include="Distributed\SingleDelivery\SDListeningModule.cs" />
     <Compile Include="Distributed\SingleDelivery\SDPublishingModule.cs" />
     <Compile Include="Distributed\TimeBuffered\MixedBufferedPublishingModule.cs" />

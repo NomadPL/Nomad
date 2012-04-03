@@ -39,30 +39,26 @@ namespace Nomad.Distributed.Communication.Utils
 
 		public static byte[] Serialize(Object obj)
 		{
-			MemoryStream stream = null;
 			byte[] bytes;
 			try
 			{
 				IFormatter formatter = new BinaryFormatter();
-				stream = new MemoryStream();
-				formatter.Serialize(stream, obj);
+                using (var stream = new MemoryStream())
+                {
+                    formatter.Serialize(stream, obj);
 
-				if (stream.Length > MESSAGE_SIZE)
-				{
-					throw new InvalidOperationException("Object is to large for serialization");
-				}
-
-				bytes = stream.ToArray();
+                    if (stream.Length > MESSAGE_SIZE)
+                    {
+                        throw new InvalidOperationException("Object is to large for serialization");
+                    }
+                    
+                    bytes = stream.ToArray();
+                }
 			}
 			catch (Exception e)
 			{
 				Logger.Warn("Serialization warning: ", e);
 				throw;
-			}
-			finally
-			{
-				if (null != stream)
-					stream.Close();
 			}
 
 			return bytes;

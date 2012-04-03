@@ -84,17 +84,20 @@ namespace Nomad.Modules
 			if (_distributedEventAggregatorServiceHost != null)
 			{
 				_distributedEventAggregatorServiceHost.Close();
+			    _distributedEventAggregatorServiceHost = null;
 			}
 
 			if (_resolver != null)
 			{
 				_resolver.Dispose();
+			    _resolver = null;
 			}
 
 			_logger.Debug("Shutting down logger repository");
 			if (_repository != null)
 			{
 				_repository.Shutdown();
+			    _repository = null;
 			}
 		}
 

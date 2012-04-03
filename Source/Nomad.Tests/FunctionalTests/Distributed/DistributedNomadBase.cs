@@ -59,7 +59,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 		[TestFixtureSetUp]
 		public void fixture_set_up()
 		{
-			KeyFile = @"alaMaKota.xml";
+			KeyFile = "alaMaKota.xml";
 			if (File.Exists(KeyFile))
 			{
 				File.Delete(KeyFile);
@@ -122,8 +122,7 @@ namespace Nomad.Tests.FunctionalTests.Distributed
 
 		protected void PrepareSharedLibrary()
 		{
-
-			RuntimePath = RUNTIME_LOCATION + GetCurrentClassName() + "\\" + GetCurrentMethodName();
+            RuntimePath = RUNTIME_LOCATION + GetCurrentClassName() + @"\" + GetCurrentMethodName();
 
 			// remove the directory if it is there already
 			if (Directory.Exists(RuntimePath))

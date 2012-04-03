@@ -16,7 +16,7 @@ namespace Nomad.Tests.FunctionalTests.Fixtures
 {
     public class ModuleLoadingWithCompilerTestFixture : MarshalByRefObject
     {
-        private const string KeyFile = @"alaMaKota.xml";
+        private const string KeyFile = "alaMaKota.xml";
         private ModuleCompiler _moduleCompiler;
 
         protected NomadKernel Kernel;

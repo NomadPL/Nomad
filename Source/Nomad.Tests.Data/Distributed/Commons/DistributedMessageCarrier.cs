@@ -16,11 +16,11 @@ namespace Nomad.Tests.Data.Distributed.Commons
 			get
 			{
 				// get the type of 
-				Assembly asm = AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.Equals("DistributableMessage")).Select( x => x).Single();
+                Assembly asm = AppDomain.CurrentDomain.GetAssemblies().Single(x => x.GetName().Name.Equals("DistributableMessage"));
 				Type type = asm.GetType("Nomad.Tests.Data.Distributed.Commons.DistributedMessageRegistry");
 
-				var methodInfo = type.GetMethods().Single(x => x.Name.Contains("Messages"));
-				var result = methodInfo.Invoke(null, null);
+				var methodInfo = type.GetProperty("Messages");
+				var result = methodInfo.GetValue(null, null);
 
 				return (IList<string>) result;
 

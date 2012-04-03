@@ -64,10 +64,7 @@ namespace Nomad.Communication.EventAggregation
 			foreach (IEventAggregator eventAggregator in _eventAggregatorsToForwardTo)
 			{
 				var outcome = eventAggregator.Publish(message);
-				if (outcome == false)
-				{
-					delivered = false;
-				}
+			    delivered = delivered && outcome;
 			}
 			return delivered;
 		}

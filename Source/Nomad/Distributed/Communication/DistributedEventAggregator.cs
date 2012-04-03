@@ -177,12 +177,7 @@ namespace Nomad.Distributed.Communication
 		{
 			string value = descriptor.QualifiedName;
 			int result;
-			if (TicketsCounter.TryGetValue(value, out result) && result > 0)
-			{
-				return true;
-			}
-
-			return false;
+		    return TicketsCounter.TryGetValue(value, out result) && result > 0;
 		}
 
 		#endregion

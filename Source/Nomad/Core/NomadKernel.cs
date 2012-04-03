@@ -130,6 +130,7 @@ namespace Nomad.Core
 			if (_moduleLoaderCreator != null)
 			{
 				_moduleLoaderCreator.Dispose();
+			    _moduleLoaderCreator = null;
 			}
 
 
@@ -137,6 +138,7 @@ namespace Nomad.Core
 			if (_repository != null)
 			{
 				_repository.Shutdown();
+			    _repository = null;
 			}
 		}
 
